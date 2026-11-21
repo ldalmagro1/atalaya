@@ -4,7 +4,7 @@
 
 Atalaya se conecta a tu backlog y a tu repositorio, trae los datos tal cual están y agrega lo que Jira, Linear o GitHub no te dan: avisos sobre historias mal escritas, una probabilidad de cierre para el sprint, huecos de trazabilidad y revisiones de pull requests con contexto del proyecto. No es un gestor de tareas propio: lee y analiza lo que ya vive en tus herramientas.
 
-> **Estado: en desarrollo temprano (Sprint 0).** Todavía no hay código ejecutable. Hoy el repositorio contiene la documentación del proyecto y las decisiones de arquitectura; el esqueleto del monorepo es lo próximo.
+> **Estado: en desarrollo temprano (Sprint 0).** El esqueleto del monorepo compila, linta y testea, pero todavía no hay funcionalidad: gateway, web y `pr-reviewer` son placeholders. El repositorio contiene además la documentación del proyecto y las decisiones de arquitectura.
 
 ## Por qué existe
 
@@ -74,3 +74,40 @@ TypeScript (modo estricto) en un monorepo de npm workspaces · Node 20+ · Fasti
 ## Licencia
 
 Sin definir todavía. Mientras tanto, todos los derechos están reservados.
+
+## Requisitos
+
+- Node.js 20 o superior (con npm).
+
+## Comandos
+
+Se corren desde la raíz del repositorio, después de `npm install`.
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Levanta el gateway, la web (`127.0.0.1:5173`) y los servicios existentes, en paralelo |
+| `npm run build` | Compila todos los workspaces |
+| `npm test` | Corre los tests de todos los workspaces |
+| `npm run typecheck` | Verifica los tipos de todos los workspaces |
+| `npm run lint` | Corre ESLint sobre todo el repositorio |
+
+## Mapa de carpetas
+
+```
+atalaya/
+├─ gateway/         @atalaya/gateway      único punto de entrada
+├─ web/             @atalaya/web          app React + Vite
+├─ pr-reviewer/     @atalaya/pr-reviewer  primera herramienta
+├─ packages/
+│  ├─ contracts/    @atalaya/contracts    tipos y schemas compartidos
+│  └─ core/         @atalaya/core         librería compartida
+├─ documents/       documentación del proyecto
+└─ DECISIONES.md    decisiones tomadas fuera de lo especificado
+```
+
+## Cómo sumar una herramienta
+
+1. Crear su carpeta en la raíz (por ejemplo, `forecast/`) con su `package.json`, su `tsconfig.json` (que extiende `tsconfig.base.json`) y sus scripts `dev`, `build`, `typecheck` y `test`.
+2. Agregarla a `workspaces` en el `package.json` de la raíz y al script `dev`.
+3. Registrarla en el gateway.
+4. Agregar su regla de aislamiento en `eslint.config.js`: una herramienta no importa código de otra ni de `gateway/`.

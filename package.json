@@ -1,0 +1,33 @@
+{
+  "name": "atalaya",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "gateway",
+    "web",
+    "pr-reviewer",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n gateway,web,pr-reviewer -c blue,green,magenta \"npm run dev -w @atalaya/gateway\" \"npm run dev -w @atalaya/web\" \"npm run dev -w @atalaya/pr-reviewer\"",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "concurrently": "^10.0.7",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^5.1.1"
+  }
+}
