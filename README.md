@@ -12,14 +12,14 @@ Los equipos chicos gestionan su trabajo en plataformas que no avisan si una hist
 
 ## Qué va a incluir
 
-| Herramienta | Qué hace | Estado |
-|---|---|---|
+| Herramienta                  | Qué hace                                                                                                                                                      | Estado                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | **Revisor de pull requests** | Entrega a Claude el PR y el contexto del repositorio; guarda los hallazgos como borrador y los publica en GitHub solo tras una vista previa y tu confirmación | Primera herramienta, en diseño |
-| Linter de user stories | Puntúa la calidad de las historias contra reglas configurables | Planeada |
-| Forecast de sprint | Probabilidad de cerrar el sprint, por simulación de Monte Carlo | Planeada |
-| Matriz de trazabilidad | Cruza requerimientos, commits y pruebas, y marca los huecos | Planeada |
-| Visualizador de dependencias | Grafo de dependencias entre módulos, con ciclos y acoplamiento | Planeada |
-| Mapa del sprint | Las historias del sprint como diagrama, con bloqueos y camino crítico | Planeada |
+| Linter de user stories       | Puntúa la calidad de las historias contra reglas configurables                                                                                                | Planeada                       |
+| Forecast de sprint           | Probabilidad de cerrar el sprint, por simulación de Monte Carlo                                                                                               | Planeada                       |
+| Matriz de trazabilidad       | Cruza requerimientos, commits y pruebas, y marca los huecos                                                                                                   | Planeada                       |
+| Visualizador de dependencias | Grafo de dependencias entre módulos, con ciclos y acoplamiento                                                                                                | Planeada                       |
+| Mapa del sprint              | Las historias del sprint como diagrama, con bloqueos y camino crítico                                                                                         | Planeada                       |
 
 ## Cómo está pensado
 
@@ -83,13 +83,15 @@ Sin definir todavía. Mientras tanto, todos los derechos están reservados.
 
 Se corren desde la raíz del repositorio, después de `npm install`.
 
-| Comando | Qué hace |
-|---|---|
-| `npm run dev` | Levanta el gateway, la web (`127.0.0.1:5173`) y los servicios existentes, en paralelo |
-| `npm run build` | Compila todos los workspaces |
-| `npm test` | Corre los tests de todos los workspaces |
-| `npm run typecheck` | Verifica los tipos de todos los workspaces |
-| `npm run lint` | Corre ESLint sobre todo el repositorio |
+| Comando                | Qué hace                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| `npm run dev`          | Levanta el gateway, la web (`127.0.0.1:5173`) y los servicios existentes, en paralelo |
+| `npm run build`        | Compila todos los workspaces                                                          |
+| `npm test`             | Corre los tests de todos los workspaces                                               |
+| `npm run typecheck`    | Verifica los tipos de todos los workspaces                                            |
+| `npm run lint`         | Corre ESLint sobre todo el repositorio                                                |
+| `npm run format:check` | Verifica que el formato cumpla con Prettier (lo exige el CI)                          |
+| `npm run format`       | Aplica el formato de Prettier a los archivos del repositorio                          |
 
 ## Mapa de carpetas
 
