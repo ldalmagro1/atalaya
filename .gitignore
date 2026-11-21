@@ -1,0 +1,23 @@
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+**/.claude/settings.local.json
+
+# Datos locales (base SQLite y su journal)
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Dependencias y salidas de build
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Logs y archivos del sistema
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
