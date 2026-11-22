@@ -24,7 +24,7 @@ Cada entrada es un bloque con estos campos, en este orden:
 - Estado: Propuesta | Evaluada | Aceptada para la segunda etapa | Descartada | Incorporada
 - Fecha de alta: AAAA-MM-DD
 - Origen: dónde apareció (no-objetivo de la Visión, sprint N, retrospectiva, pedido de un usuario)
-- Herramienta o área: core | proveedores | linter | forecast | matriz | dependencias | mapa del sprint | agente revisor | CLI | transversal
+- Herramienta o área: core | proveedores | linter | forecast | matriz | dependencias | mapa del sprint | agente revisor | verificador E2E | CLI | transversal
 - Descripción: qué es y qué problema resuelve, en 2 o 3 oraciones
 - Por qué quedó afuera: motivo concreto (costo, dependencia, no valida el MVP, decisión de alcance)
 - Valor: Alto | Medio | Bajo | Sin evaluar — con una línea de justificación
@@ -74,6 +74,7 @@ P1 se encara primero en la segunda etapa, P2 después y P3 solo si sobra capacid
 | SE-006 | Desplegar la plataforma fuera de la máquina local | transversal | Sin evaluar | Sin evaluar | Sin evaluar | Propuesta |
 | SE-007 | Línea de comandos unificada como cliente del gateway | CLI | Sin evaluar | Sin evaluar | Sin evaluar | Propuesta |
 | SE-008 | Construir el linter de historias y el forecast de sprint | linter | Sin evaluar | Sin evaluar | Sin evaluar | Propuesta |
+| SE-009 | Construir el verificador de aceptación de punta a punta | verificador E2E | Sin evaluar | Sin evaluar | Sin evaluar | Propuesta |
 
 ## Entradas
 
@@ -188,3 +189,17 @@ P1 se encara primero en la segunda etapa, P2 después y P3 solo si sobra capacid
 - Prioridad: Sin evaluar
 - Dependencias: ADR-001, plantilla de servicio y adaptador de Jira (ATAL-17 como punto de partida).
 - Historial: 2026-11-21 · alta
+
+### SE-009 · Construir el verificador de aceptación de punta a punta
+
+- Estado: Propuesta
+- Fecha de alta: 2026-11-22
+- Origen: ATAL-22 (conversación sobre qué probar más allá del CI por PR)
+- Herramienta o área: verificador E2E
+- Descripción: una herramienta nueva que toma los criterios de aceptación de una historia y los prueba contra la aplicación corriendo, recorriendo los flujos reales en un navegador. Tiene dos niveles: pruebas E2E determinísticas con Playwright (con datos falsos y sin red) y, encima, un agente con navegador, conectado por MCP, que explora la app guiado por los criterios y reporta fallas. Se ejecutaría bajo pedido, por calendario o cada N fusiones a `main`, no en cada PR. Cada criterio quedaría ligado a su prueba, lo que alimenta la matriz de trazabilidad.
+- Por qué quedó afuera: hoy gateway, web y `pr-reviewer` son placeholders y no hay flujos que probar. El agente tiene costo por uso, no es determinístico y exige controlar los falsos positivos; conviene un discovery antes de comprometerlo. Una máquina virtual efímera para correrlo es un paso posterior.
+- Valor: Sin evaluar
+- Esfuerzo: Sin evaluar
+- Prioridad: Sin evaluar
+- Dependencias: primer flujo real de la web (revisor de pull requests), ADR-001 y ADR-002; se refina cuando se trabaje esta herramienta.
+- Historial: 2026-11-22 · alta

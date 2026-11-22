@@ -20,6 +20,7 @@ Los equipos chicos gestionan su trabajo en plataformas que no avisan si una hist
 | Matriz de trazabilidad       | Cruza requerimientos, commits y pruebas, y marca los huecos                                                                                                   | Planeada                       |
 | Visualizador de dependencias | Grafo de dependencias entre módulos, con ciclos y acoplamiento                                                                                                | Planeada                       |
 | Mapa del sprint              | Las historias del sprint como diagrama, con bloqueos y camino crítico                                                                                         | Planeada                       |
+| Verificador de aceptación    | Prueba de punta a punta los criterios de aceptación contra la app corriendo, con Playwright y un agente con navegador; se corre bajo pedido o cada N fusiones | Idea, por refinar (SE-009)     |
 
 ## Cómo está pensado
 
