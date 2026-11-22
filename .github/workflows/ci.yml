@@ -13,8 +13,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verificar:
+  chequeo:
+    name: ${{ matrix.nombre }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nombre: Typecheck
+            script: typecheck
+          - nombre: Lint
+            script: lint
+          - nombre: Formato
+            script: format:check
+          - nombre: Tests
+            script: test
+          - nombre: Build
+            script: build
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,13 +37,4 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - name: Typecheck
-        run: npm run typecheck
-      - name: Lint
-        run: npm run lint
-      - name: Formato
-        run: npm run format:check
-      - name: Tests
-        run: npm test
-      - name: Build
-        run: npm run build
+      - run: npm run ${{ matrix.script }}

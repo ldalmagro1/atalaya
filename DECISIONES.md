@@ -20,3 +20,4 @@ Decisiones tomadas durante ATAL-5 que la historia no fijaba.
 - **Nombre de ramas.** Se usa `ATAL-N-slug` (mayúsculas), como genera `/iniciar-US`, en lugar del `atal-N-slug` de la nota de la historia.
 - **`.claude/`** se agrega a `.gitignore`.
 - **Lockfile y `npm ci` en Linux.** El lock generado en Windows omitía `@emnapi/core` y `@emnapi/runtime` (dependencias del binding wasm opcional), y `npm ci` fallaba en el runner. Se agregan como `devDependencies` exactas (`2.0.0-beta.2`) para que el lock quede completo en cualquier plataforma.
+- **CI desglosado.** Cada paso (Typecheck, Lint, Formato, Tests, Build) es un job propio, definido con una matriz, para que cada uno aparezca como un chequeo separado en el PR. `fail-fast: false` deja correr todos aunque uno falle. Al activar la protección de `main`, exigir los cinco chequeos.
