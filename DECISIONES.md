@@ -13,3 +13,9 @@ Decisiones tomadas durante ATAL-5 que la historia no fijaba.
 - **TypeScript.** Además de `strict`, se activan `noUncheckedIndexedAccess` y `noImplicitOverride`.
 - **Placeholders.** Cada servicio importa `serviceBanner` de `@atalaya/contracts` e imprime su nombre, lo que prueba que el paquete se resuelve.
 - **Web.** Vite está fijo a `127.0.0.1:5173` con `--strictPort`, como indica ADR-001.
+
+## ATAL-22
+
+- **CI.** `actions/checkout@v4` y `actions/setup-node@v4`, un solo job en `ubuntu-latest`, `permissions: contents: read` y `concurrency` que cancela runs obsoletos del mismo ref.
+- **Nombre de ramas.** Se usa `ATAL-N-slug` (mayúsculas), como genera `/iniciar-US`, en lugar del `atal-N-slug` de la nota de la historia.
+- **`.claude/`** se agrega a `.gitignore`.

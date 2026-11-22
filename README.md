@@ -71,6 +71,12 @@ TypeScript (modo estricto) en un monorepo de npm workspaces · Node 20+ · Fasti
 3. **Revisor de pull requests:** de punta a punta, con interfaz web.
 4. **Después:** el resto de las herramientas, cada una como un servicio nuevo.
 
+## Convenciones de trabajo
+
+- **Ramas:** `ATAL-N-slug`, donde `N` es el número de la historia y el slug resume su título (por ejemplo, `ATAL-22-configurar-la-integracion-continua`).
+- **Commits:** `ATAL-N: mensaje` en español, en imperativo o infinitivo corto.
+- **Pull requests:** una historia por PR, con la plantilla completa. El CI (typecheck, lint, formato, tests y build) debe estar en verde antes de fusionar.
+
 ## Licencia
 
 Sin definir todavía. Mientras tanto, todos los derechos están reservados.
