@@ -2,6 +2,9 @@
 
 Decisiones tomadas durante ATAL-5 que la historia no fijaba.
 
+- **`/iniciar-US` sin subagentes.** El comando lee Jira, explora el repo y arma el plan directamente en la sesión, sin delegar en subagentes.
+- **`/iniciar-US` no commitea por su cuenta ni suma coautor.** Los commits solo se hacen con autorización explícita del usuario y sin línea `Co-Authored-By`.
+
 - **Paquetes compartidos sin paso de build.** `@atalaya/contracts` y `@atalaya/core` exponen `src/index.ts` directamente (`exports`), para que `typecheck` y `lint` funcionen en un clon limpio sin compilar antes. Su script `build` es `tsc --noEmit`. Los consumen `tsx`, Vite y `tsc` con `moduleResolution: Bundler`.
 - **Salida de build de los servicios.** `gateway` y `pr-reviewer` compilan con `rootDir: ".."`, por lo que `dist/` refleja la estructura del repositorio. Es suficiente para un placeholder; se revisa en ATAL-6 si hace falta ejecutar desde `dist/`.
 - **Aislamiento entre herramientas con ESLint.** La regla `no-restricted-imports` en `eslint.config.js` prohíbe que `pr-reviewer`, `gateway` y `web` se importen entre sí, por nombre de paquete o por ruta relativa. Se verificó que falla con un import prohibido.
