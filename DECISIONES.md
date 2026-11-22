@@ -19,3 +19,4 @@ Decisiones tomadas durante ATAL-5 que la historia no fijaba.
 - **CI.** `actions/checkout@v4` y `actions/setup-node@v4`, un solo job en `ubuntu-latest`, `permissions: contents: read` y `concurrency` que cancela runs obsoletos del mismo ref.
 - **Nombre de ramas.** Se usa `ATAL-N-slug` (mayúsculas), como genera `/iniciar-US`, en lugar del `atal-N-slug` de la nota de la historia.
 - **`.claude/`** se agrega a `.gitignore`.
+- **Lockfile y `npm ci` en Linux.** El lock generado en Windows omitía `@emnapi/core` y `@emnapi/runtime` (dependencias del binding wasm opcional), y `npm ci` fallaba en el runner. Se agregan como `devDependencies` exactas (`2.0.0-beta.2`) para que el lock quede completo en cualquier plataforma.

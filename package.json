@@ -22,6 +22,8 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@emnapi/core": "2.0.0-beta.2",
+    "@emnapi/runtime": "2.0.0-beta.2",
     "@types/node": "^26.6.6",
     "concurrently": "^10.0.7",
     "eslint": "^10.15.0",
