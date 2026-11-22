@@ -20,6 +20,7 @@ Los equipos chicos gestionan su trabajo en plataformas que no avisan si una hist
 | Matriz de trazabilidad       | Cruza requerimientos, commits y pruebas, y marca los huecos                                                                                                   | Planeada                       |
 | Visualizador de dependencias | Grafo de dependencias entre módulos, con ciclos y acoplamiento                                                                                                | Planeada                       |
 | Mapa del sprint              | Las historias del sprint como diagrama, con bloqueos y camino crítico                                                                                         | Planeada                       |
+| Verificador de aceptación    | Prueba de punta a punta los criterios de aceptación contra la app corriendo, con Playwright y un agente con navegador; se corre bajo pedido o cada N fusiones | Idea, por refinar (SE-009)     |
 
 ## Cómo está pensado
 
@@ -70,6 +71,12 @@ TypeScript (modo estricto) en un monorepo de npm workspaces · Node 20+ · Fasti
 2. **Base de la plataforma:** acceso a la base de datos, plantilla de servicio, gateway y servidor MCP.
 3. **Revisor de pull requests:** de punta a punta, con interfaz web.
 4. **Después:** el resto de las herramientas, cada una como un servicio nuevo.
+
+## Convenciones de trabajo
+
+- **Ramas:** `ATAL-N-slug`, donde `N` es el número de la historia y el slug resume su título (por ejemplo, `ATAL-22-configurar-la-integracion-continua`).
+- **Commits:** `ATAL-N: mensaje` en español, en imperativo o infinitivo corto.
+- **Pull requests:** una historia por PR, con la plantilla completa. El CI (typecheck, lint, formato, tests y build) debe estar en verde antes de fusionar.
 
 ## Licencia
 

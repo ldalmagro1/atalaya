@@ -1,0 +1,2 @@
+# Bloquea el commit si los archivos en stage contienen secretos
+git diff --cached --name-only --diff-filter=ACMR -z | xargs -0 --no-run-if-empty npx --no -- secretlint
