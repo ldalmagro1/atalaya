@@ -85,7 +85,7 @@ Sin definir todavía. Mientras tanto, todos los derechos están reservados.
 
 ## Requisitos
 
-- Node.js 20 o superior (con npm).
+- Node.js 20.12 o superior (con npm).
 
 ## Comandos
 
@@ -115,9 +115,18 @@ atalaya/
 └─ DECISIONES.md    decisiones tomadas fuera de lo especificado
 ```
 
-## Cómo sumar una herramienta
+## Cómo crear una herramienta nueva
 
-1. Crear su carpeta en la raíz (por ejemplo, `forecast/`) con su `package.json`, su `tsconfig.json` (que extiende `tsconfig.base.json`) y sus scripts `dev`, `build`, `typecheck` y `test`.
-2. Agregarla a `workspaces` en el `package.json` de la raíz y al script `dev`.
-3. Registrarla en el gateway.
-4. Agregar su regla de aislamiento en `eslint.config.js`: una herramienta no importa código de otra ni de `gateway/`.
+Cada herramienta es un servicio con su carpeta, su puerto y sus tablas (ADR-001 y ADR-003). El punto de partida es `pr-reviewer/`:
+
+1. **Copiar la carpeta** `pr-reviewer/` a la raíz con el nombre de la herramienta (por ejemplo, `forecast/`) y cambiar en ella:
+   - `package.json`: el `name` (`@atalaya/forecast`).
+   - `src/index.ts`: el `id`, el `name`, la `description` y el `version` que pasa a `createServiceApp`, el `service` y el prefijo de tablas (`forecast_`) que pasa a `runMigrations`.
+   - `src/config.ts`: el nombre de la variable del puerto (`FORECAST_PORT`).
+   - `README.md`, `db/migrations/` (vacía; las migraciones son `NNN_nombre.sql` y sus objetos llevan el prefijo) y `src/config.test.ts`.
+2. **Declarar sus variables** en `.env.example` (`FORECAST_PORT=3102`). El token interno y `DB_PATH` son los mismos para todos.
+3. **Agregarla a `workspaces`** y al script `dev` del `package.json` de la raíz, y correr `npm install`.
+4. **Agregar su regla de aislamiento** en `eslint.config.js`: una herramienta no importa código de otra ni de `gateway/`.
+5. **Registrarla en el gateway** para que enrute `/api/tools/forecast/*`.
+
+El servicio responde a pedidos con el encabezado `X-Atalaya-Internal-Token`, escucha solo en `127.0.0.1` y nunca habilita CORS; `createServiceApp` y `listenLocal` de `@atalaya/core` ya lo garantizan. Las migraciones que toquen objetos fuera del prefijo del servicio, o declaren claves foráneas hacia tablas de otro, se rechazan al arrancar.
