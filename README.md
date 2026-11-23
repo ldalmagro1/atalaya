@@ -53,7 +53,7 @@ flowchart LR
 
 ## Stack
 
-TypeScript (modo estricto) en un monorepo de npm workspaces · Node 20+ · Fastify y zod · SQLite · React, Vite y Tailwind CSS · vitest · ESLint y Prettier.
+TypeScript (modo estricto) en un monorepo de npm workspaces · Node 24+ · Fastify y zod · SQLite · React, Vite y Tailwind CSS · vitest · ESLint y Prettier.
 
 ## Documentación
 
@@ -85,7 +85,7 @@ Sin definir todavía. Mientras tanto, todos los derechos están reservados.
 
 ## Requisitos
 
-- Node.js 20.12 o superior (con npm).
+- Node.js 24 o superior (con npm).
 
 ## Comandos
 

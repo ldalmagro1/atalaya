@@ -14,7 +14,7 @@ Hoy solo trae la base del servicio: `GET /internal/health` y `GET /internal/mani
 | `INTERNAL_TOKEN`   | Secreto de 32 caracteres o más; todo pedido debe traerlo en `X-Atalaya-Internal-Token`.    |
 | `DB_PATH`          | Base SQLite compartida (`./data/atalaya.db`); una ruta relativa parte de la raíz del repo. |
 
-Requiere Node 20.12 o superior (usa `process.loadEnvFile`).
+Requiere Node 24 o superior (usa `process.loadEnvFile`).
 
 ## Base de datos
 
