@@ -17,7 +17,7 @@ Atalaya es una plataforma local de herramientas de gestión de proyectos de soft
 
 ## Stack (decisiones fijas)
 
-TypeScript estricto; npm workspaces; Node 20+; Fastify + zod; SQLite con better-sqlite3; Vite + React 18 + React Router + Tailwind CSS v3; vitest; ESLint + Prettier; Octokit. La IA no se llama por API: la aporta Claude desde la sesión del usuario vía MCP. No agregar dependencias de stack nuevas sin una historia que lo justifique; las herramientas de desarrollo (typescript, tsx, vitest, eslint, prettier, concurrently, husky, secretlint) no cuentan.
+TypeScript estricto; npm workspaces; Node 20+; Fastify + zod; SQLite con better-sqlite3; Vite + React 18 + React Router + Tailwind CSS v3; vitest; ESLint + Prettier; Octokit. La IA no se llama por API: la aporta Claude desde la sesión del usuario vía MCP. No agregar dependencias de stack nuevas sin justificarlas en el plan de la historia y con confirmación explícita del usuario; la decisión se registra en `DECISIONES.md`. Las herramientas de desarrollo (typescript, tsx, vitest, eslint, prettier, concurrently, husky, secretlint) no cuentan.
 
 ## Estructura y aislamiento
 
