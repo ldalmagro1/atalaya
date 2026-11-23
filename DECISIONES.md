@@ -24,6 +24,17 @@ Decisiones tomadas durante ATAL-5 que la historia no fijaba.
 - **Secretos, tres capas.** (1) Hook de pre-commit con husky y `secretlint` (paquete de npm, sin binarios que instalar; se activa solo con `npm install` por el script `prepare`); `npm run secrets:check` lo corre sobre todo el repo. (2) Job `Secretos` en el CI con `gitleaks-action`, que escanea el historial del PR con `fetch-depth: 0`; es un sexto chequeo a exigir en la protección de `main`. (3) Secret scanning y push protection de GitHub, que ya vienen activos en repos públicos. Los patrones genéricos de GitHub (`secret_scanning_non_provider_patterns`) no están disponibles en el plan gratuito: la API los rechaza y la opción no aparece en la web. Los secretos genéricos (contraseñas, claves privadas) los cubren gitleaks en el CI y secretlint en el pre-commit. Se usan dos herramientas (secretlint local, gitleaks en CI) para no exigir un binario en cada máquina.
 - **Verificador de aceptación E2E.** Se registra como idea en `alcances-segunda-etapa.md` (SE-009) y en la tabla del README, sin compromiso de sprint.
 
+## ATAL-26
+
+- **Escalones de hosting.** Local con Cloudflare Tunnel y Access en `atalaya-dev.lucasdalmagro.com` (este equipo), luego otra computadora de casa y, solo si no hay máquina, Google Cloud e2-micro (Always Free). Detalle en `ADR-004`.
+- **Raspberry Pi como idea a muy largo plazo.** Se anota en `ADR-004` sin compromiso ni plan de compra; no se investigó su compatibilidad.
+- **Un solo usuario al inicio.** El multiusuario (login propio con GitHub App, tokens por usuario cifrados, datos por usuario) es una fase posterior y no se implementa ni se documenta como regla vigente. ADR-003 no cambia.
+- **Disponibilidad.** La URL responde solo mientras el equipo esté encendido; se acepta. Sin CD ni ambiente productivo (SE-006 sigue fuera de alcance).
+- **`CLAUDE.md` y ADR-001.** Se agrega la regla de publicación (Tunnel, Access, validación del JWT, CORS con el dominio) sin cambiar el resto. La regla de tokens solo en `.env` se mantiene mientras haya un solo usuario.
+- **Delegación a subagentes.** Durante el discovery se intentó delegar la lectura de páginas oficiales en subagentes, contra la regla del proyecto. Una lectura se ejecutó (Litestream y R2) y las demás se hicieron con búsquedas directas.
+- **Sin historias creadas.** Las historias derivadas se proponen en el comentario de ATAL-26; las crea Lucas si las acepta.
+- **Fuentes.** Las cifras de precios y límites son del 23/11/2026, de resúmenes de búsqueda y no de lecturas completas, y se marcan como no verificadas cuando corresponde.
+
 ## ATAL-21
 
 - **`CLAUDE.md` adaptado a lo posterior a la historia.** Se parte del texto de la historia y se actualiza con lo que se implementó después: `/iniciar-US` como forma de arrancar (sin subagentes y con confirmación del plan), commits solo con autorización y sin coautor, registro de decisiones en `DECISIONES.md`, control de secretos (secretlint, gitleaks) y `secrets:check` entre los comandos. Se conservan las reglas que ya tenía el archivo (idioma, commits, decisiones).

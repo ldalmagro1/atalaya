@@ -51,4 +51,4 @@ atalaya/
 - (−) Hay más procesos, más puertos y más contratos que mantener que en un solo servidor.
 - (−) Las integraciones entre herramientas pasan por HTTP y necesitan contratos explícitos.
 - (−) El trabajo de base (gateway, plantilla de servicio, contratos) entra antes de la primera herramienta. Se mitiga con historias chicas y la plantilla reutilizable.
-- (−) Si más adelante se publica fuera de la máquina local, hay que sumar autenticación y HTTPS en el gateway (ver ATAL-26 y SE-006).
+- (−) Si más adelante se publica fuera de la máquina local, hay que sumar autenticación y HTTPS en el gateway (ver ATAL-26 y SE-006). *Actualizado por ATAL-26:* ADR-004 resuelve la publicación para un solo usuario con Cloudflare Tunnel y Cloudflare Access (HTTPS y login de GitHub en el borde); el gateway sigue escuchando solo en `127.0.0.1` y valida el JWT de Access. El login propio queda para la fase multiusuario.

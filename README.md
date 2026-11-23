@@ -64,6 +64,7 @@ TypeScript (modo estricto) en un monorepo de npm workspaces · Node 20+ · Fasti
   - [ADR-001 · Servicios por herramienta y gateway](documents/documentacion-proyecto/documentos-dinamicos/adr/ADR-001-servicios-por-herramienta-y-gateway.md)
   - [ADR-002 · Revisiones con IA vía MCP](documents/documentacion-proyecto/documentos-dinamicos/adr/ADR-002-revisiones-con-ia-via-mcp.md)
   - [ADR-003 · Base de datos única](documents/documentacion-proyecto/documentos-dinamicos/adr/ADR-003-base-de-datos-unica.md)
+  - [ADR-004 · Hosting y acceso](documents/documentacion-proyecto/documentos-dinamicos/adr/ADR-004-hosting-y-acceso.md)
 
 ## Hoja de ruta
 

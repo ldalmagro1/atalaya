@@ -40,6 +40,7 @@ TypeScript estricto; npm workspaces; Node 20+; Fastify + zod; SQLite con better-
 - API keys y tokens viven solo en `.env`: nunca en el repo, la configuración guardada, logs, respuestas HTTP ni el bundle del front. El repo es público: tampoco datos reales de Jira o GitHub sin anonimizar en tests o fixtures. Hay control de secretos en pre-commit (secretlint) y en CI (gitleaks); no lo omitas con `--no-verify`.
 - Cada servicio tiene su `config.ts`, que lee y valida una sola vez solo las variables que necesita; nadie más lee `process.env` para secretos.
 - Todo escucha solo en `127.0.0.1`. Solo el gateway tiene CORS (`http://127.0.0.1:5173` y `http://localhost:5173`). Los servicios no tienen CORS y rechazan pedidos sin el encabezado `X-Atalaya-Internal-Token` igual a `INTERNAL_TOKEN`.
+- Publicación (ADR-004): si la plataforma se publica en `https://atalaya-dev.lucasdalmagro.com`, solo se hace con Cloudflare Tunnel (sin abrir puertos ni escuchar fuera de `127.0.0.1`) y con Cloudflare Access delante, con login de GitHub restringido al usuario. Entonces el gateway valida el JWT de la cabecera `Cf-Access-Jwt-Assertion` (firma, `iss`, `aud`, `exp`) y rechaza lo que no lo traiga, y su CORS suma ese origen. No se publica nada hasta que existan esas dos piezas. Por ahora hay un solo usuario; el multiusuario (login propio con GitHub App, tokens por usuario cifrados) es una fase posterior y cambiaría las reglas de `.env` y de ADR-003.
 - La UI nunca renderiza HTML crudo (react-markdown sin rehype-raw).
 
 ## Arquitectura de código
