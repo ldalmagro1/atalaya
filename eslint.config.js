@@ -15,6 +15,29 @@ const forbid = (...patterns) => ({
   ],
 });
 
+// Herramientas con carpeta en web/src/tools/<toolId>/. Al sumar una herramienta nueva, agregar su id
+// aquí: no puede importar de la carpeta de otra (ver web/src/tools/README.md).
+const webTools = ['pr-reviewer'];
+
+// Lo que la web nunca importa: otros servicios. Se excluye `src/` porque web/src/tools/pr-reviewer/
+// es código de la web y sí se importa por ruta relativa.
+const webBase = [
+  '@atalaya/gateway',
+  '@atalaya/pr-reviewer',
+  '**/gateway/**',
+  '**/pr-reviewer/src/**',
+];
+
+function webToolRules() {
+  return webTools.map((tool) => {
+    const others = webTools.filter((other) => other !== tool);
+    return {
+      files: [`web/src/tools/${tool}/**/*.{ts,tsx}`],
+      rules: forbid(...webBase, ...others.map((other) => `**/${other}/**`)),
+    };
+  });
+}
+
 export default tseslint.config(
   { ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', 'data/**', 'documents/**'] },
   ...tseslint.configs.recommended,
@@ -29,6 +52,7 @@ export default tseslint.config(
   },
   {
     files: ['web/**/*.{ts,tsx}'],
-    rules: forbid('@atalaya/gateway', '@atalaya/pr-reviewer', '**/gateway/**', '**/pr-reviewer/**'),
+    rules: forbid(...webBase),
   },
+  ...webToolRules(),
 );
