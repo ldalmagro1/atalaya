@@ -4,7 +4,9 @@ import type { Db, GitHubApi } from '@atalaya/core';
 import { GitHubStatus, Repo, RepoCheckResult } from '@atalaya/contracts';
 import { buildApp } from './app.js';
 import { loadConfig } from './config.js';
+import { RepoStore } from './repos/repo-store.js';
 import { createTestDb } from './test-db.js';
+import { fakeGitHub } from './test-github.js';
 
 const INTERNAL = 'tok-' + 'a1b2c3d4'.repeat(5);
 const GH_TOKEN = 'github_pat_SECRETO_DE_PRUEBA_987654';
@@ -12,21 +14,17 @@ const GH_TOKEN = 'github_pat_SECRETO_DE_PRUEBA_987654';
 const httpError = (status: number, headers: Record<string, string> = {}) =>
   Object.assign(new Error(GH_TOKEN), { status, response: { headers } });
 
-function fakeOctokit(
-  overrides: { [K in keyof GitHubApi]?: Partial<GitHubApi[K]> } = {},
-): GitHubApi {
-  return {
+/** Cliente falso con espías en las llamadas que estos tests observan. */
+function fakeOctokit(overrides: Parameters<typeof fakeGitHub>[0] = {}): GitHubApi {
+  const base = fakeGitHub();
+  return fakeGitHub({
     users: {
-      getAuthenticated: vi.fn().mockResolvedValue({ data: { login: 'lucas' } }),
+      getAuthenticated: vi.fn(base.users.getAuthenticated),
       ...overrides.users,
     },
-    repos: {
-      get: vi.fn().mockResolvedValue({ data: { default_branch: 'develop' } }),
-      getContent: vi.fn().mockResolvedValue({ data: [] }),
-      ...overrides.repos,
-    },
-    pulls: { list: vi.fn().mockResolvedValue({ data: [] }), ...overrides.pulls },
-  };
+    repos: { get: vi.fn(base.repos.get), ...overrides.repos },
+    pulls: overrides.pulls,
+  });
 }
 
 describe('GitHub', () => {
@@ -50,16 +48,8 @@ describe('GitHub', () => {
     db.close();
   });
 
-  const createRepo = async () =>
-    Repo.parse(
-      (
-        await app.inject({
-          method: 'POST',
-          url: '/api/repos',
-          payload: { owner: 'acme', name: 'api' },
-        })
-      ).json(),
-    );
+  /** Inserta el repo sin pasar por el alta, que verifica en GitHub. */
+  const seedRepo = () => new RepoStore(db).create('acme', 'api');
   const check = (id: number) =>
     app.inject({ method: 'POST', url: `/api/repos/${id}/github/check` });
 
@@ -107,7 +97,7 @@ describe('GitHub', () => {
   describe('POST /api/repos/:id/github/check', () => {
     it('sin token: 503 GITHUB_NOT_CONFIGURED', async () => {
       await start();
-      const repo = await createRepo();
+      const repo = seedRepo();
       const res = await check(repo.id);
       expect(res.statusCode).toBe(503);
       expect(res.json()).toMatchObject({ code: 'GITHUB_NOT_CONFIGURED' });
@@ -130,7 +120,7 @@ describe('GitHub', () => {
     it('con acceso completo: ok y guarda defaultBranch en la config', async () => {
       const octokit = fakeOctokit();
       await start({ octokit });
-      const repo = await createRepo();
+      const repo = seedRepo();
       expect(repo.config.github.defaultBranch).toBeNull();
 
       const res = await check(repo.id);
@@ -154,7 +144,7 @@ describe('GitHub', () => {
       await start({
         octokit: fakeOctokit({ pulls: { list: vi.fn().mockRejectedValue(httpError(403)) } }),
       });
-      const repo = await createRepo();
+      const repo = seedRepo();
       const res = await check(repo.id);
       expect(res.statusCode).toBe(200);
       expect(res.json()).toMatchObject({ ok: false, canReadPulls: false, canReadContents: true });
@@ -172,7 +162,7 @@ describe('GitHub', () => {
       ['5xx', httpError(500), 502, 'GITHUB_UNAVAILABLE'],
     ])('error %s de GitHub: %i %s', async (_name, error, status, code) => {
       await start({ octokit: fakeOctokit({ repos: { get: vi.fn().mockRejectedValue(error) } }) });
-      const repo = await createRepo();
+      const repo = seedRepo();
       const res = await check(repo.id);
       expect(res.statusCode).toBe(status);
       expect(res.json()).toMatchObject({ code });
@@ -197,7 +187,7 @@ describe('GitHub', () => {
       githubToken: GH_TOKEN,
       octokit: fakeOctokit({ repos: { get: vi.fn().mockRejectedValue(httpError(401)) } }),
     });
-    const repo = await createRepo();
+    const repo = seedRepo();
     const responses = [
       await app.inject({ url: '/api/github/status' }),
       await check(repo.id),

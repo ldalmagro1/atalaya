@@ -3,6 +3,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import {
   createGitHubClient,
   createJiraProvider,
+  GitHubRepoProvider,
   registerErrorHandling,
   type Db,
   type GitHubApi,
@@ -26,7 +27,7 @@ export const ALLOWED_ORIGINS = ['http://127.0.0.1:5173', 'http://localhost:5173'
 export interface BuildAppOptions {
   internalToken: string;
   tools: ToolEntry[];
-  /** Base única, ya migrada (tablas `gateway_`). */
+  /** Base única, ya migrada (tablas `gateway_` y `core_`). */
   db: Db;
   /** Para inyectar un cliente falso en los tests. */
   fetchFn?: FetchFn;
@@ -51,6 +52,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   const github =
     options.octokit ??
     (options.githubToken ? createGitHubClient({ token: options.githubToken }) : null);
+  const repoProvider = github ? new GitHubRepoProvider(github, db) : null;
   const jira = options.jiraProvider ?? (options.jira ? createJiraProvider(options.jira) : null);
   if (internalToken.length === 0) throw new Error('internalToken no puede estar vacío');
   const upstream = { fetchFn: options.fetchFn ?? fetch, internalToken };
@@ -89,6 +91,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
           upstream,
           tools,
           manifestTimeoutMs: options.healthTimeoutMs ?? 1500,
+          repoProvider,
         });
         await api.register(repoToolRoutes, {
           store,

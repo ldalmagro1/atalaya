@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { listenLocal, openDatabase, runMigrations } from '@atalaya/core';
+import { listenLocal, openDatabase, runCoreMigrations, runMigrations } from '@atalaya/core';
 import { buildApp } from './app.js';
 import { loadConfig, loadEnvFile } from './config.js';
 import { registeredTools } from './tools.config.js';
@@ -15,6 +15,7 @@ try {
 }
 
 const db = openDatabase({ path: config.dbPath });
+runCoreMigrations(db);
 runMigrations({
   db,
   service: 'gateway',

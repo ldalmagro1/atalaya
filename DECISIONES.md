@@ -157,3 +157,16 @@ Decisiones tomadas durante ATAL-5 que la historia no fijaba.
 - **Id de `pr_reviewer`.** El servicio declaraba `pr-reviewer`, que no cumple `ToolId` ni coincide con el registro; pasa a `pr_reviewer`. La app se arma en `pr-reviewer/src/app.ts` para poder probarla.
 - **Verificación de GitHub.** `github/check` releía la config antes de esperar a GitHub y podía revertir una sección guardada entretanto; ahora relee antes de escribir `defaultBranch`.
 - **Fuera de alcance.** La pantalla de configuración (ATAL-19) y leer la configuración desde `pr-reviewer` (ATAL-7).
+
+## ATAL-16
+
+- **Alta sin token: 503 y no se crea (elegido por Lucas).** `POST /api/repos` responde `GITHUB_NOT_CONFIGURED` como `github/check`. El orden es: body (400), token (503), duplicado (409, sin llamar a GitHub) y `getRepo`. Cualquier error de GitHub deja el alta sin guardar.
+- **La rama por defecto no se guarda en el alta (elegido por Lucas).** El repo nace con la config por defecto de ATAL-14; `defaultBranch` la completa `github/check`.
+- **`new GitHubRepoProvider(octokit, db)`.** Además del cliente que pide la historia, recibe la base para la caché. `clearCache(ref?)` es de la clase y no de la interfaz. Los tipos no pasan todavía a `contracts` porque la web no los usa.
+- **Claves de la caché.** `owner/name:` en minúsculas (GitHub no distingue mayúsculas), seguido del recurso; el sha va en minúsculas y la ruta tal cual. Cada página de archivos tiene su clave y su ETag. Se guarda el dato ya convertido y se valida con zod al leerlo: si no cumple, cuenta como no cacheado. Un 404 en una lectura borra la entrada.
+- **`getFileContent`.** Exige un sha completo (cachear sin vencimiento una rama sería un error) y rechaza rutas con segmentos `.` o `..`. Devuelve `null` si la ruta no es un archivo (carpeta, submódulo, enlace simbólico) o supera 1 MB, caso en el que GitHub no envía el contenido; eso se cachea. Un 404 también es `null` pero no se cachea, porque puede ser un permiso que se corrige después. Decodifica como UTF-8; no detecta binarios.
+- **Errores.** Se reutiliza la traducción de ATAL-15: un PR inexistente sale como `REPO_NOT_FOUND_OR_NO_ACCESS` y una respuesta con forma inesperada como `GITHUB_UNAVAILABLE`. `INVALID_INLINE_COMMENTS` (422) solo se lanza si GitHub responde 422 y la review llevaba comentarios en línea; no se interpreta el mensaje de GitHub, así que otra causa de 422 en ese caso se informa igual.
+- **Entrada de la review validada.** zod descarta claves desconocidas, de modo que un `event` colado en la entrada no llega a GitHub; el tipo de `createReview` solo admite `'COMMENT'`.
+- **Log de Octokit.** `createGitHubClient` silencia las líneas de estado 304, que Octokit registra como error y son la lectura normal desde la caché.
+- **Dos procesos a la vez.** `runMigrations` aplicaba dos veces una migración si otro proceso la corría entre la lectura y la escritura; ahora relee dentro de una transacción `immediate`. Además, `openDatabase` reintenta activar WAL, que sobre una base nueva responde `SQLITE_BUSY` sin respetar `busy_timeout`. Ambos fallos se reprodujeron con tests antes de corregirlos.
+- **Fuera de alcance.** Las rutas de PRs y el filtrado de diffs (ATAL-7), `GITHUB_TOKEN` en `pr-reviewer` y limpiar la caché al borrar un repo.

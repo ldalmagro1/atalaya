@@ -1,9 +1,10 @@
 import { resolve } from 'node:path';
-import { openDatabase, runMigrations, type Db } from '@atalaya/core';
+import { openDatabase, runCoreMigrations, runMigrations, type Db } from '@atalaya/core';
 
-/** Base en memoria con las migraciones reales del gateway (solo para tests). */
+/** Base en memoria con las migraciones reales de core y del gateway (solo para tests). */
 export function createTestDb(): Db {
   const db = openDatabase({ path: ':memory:' });
+  runCoreMigrations(db);
   runMigrations({
     db,
     service: 'gateway',

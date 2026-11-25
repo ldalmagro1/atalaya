@@ -1,30 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import { AppError } from '../lib/errors.js';
 import { checkRepoAccess, getAuthStatus } from './check.js';
-import { createGitHubClient, type GitHubApi } from './client.js';
+import { createGitHubClient } from './client.js';
 import { classifyGitHubError, translateGitHubError } from './errors.js';
+import { fakeApi } from './fake-api.js';
 
 const SECRET = 'github_pat_SECRETO_DE_PRUEBA_123456';
 
 /** Error con la forma de `RequestError` de Octokit, con el token en su mensaje. */
 const httpError = (status: number, headers: Record<string, string> = {}, message = SECRET) =>
   Object.assign(new Error(message), { status, response: { headers } });
-
-function fakeApi(overrides: Partial<{ [K in keyof GitHubApi]: Partial<GitHubApi[K]> }> = {}) {
-  const api: GitHubApi = {
-    users: { getAuthenticated: vi.fn().mockResolvedValue({ data: { login: 'lucas' } }) },
-    repos: {
-      get: vi.fn().mockResolvedValue({ data: { default_branch: 'main' } }),
-      getContent: vi.fn().mockResolvedValue({ data: [] }),
-    },
-    pulls: { list: vi.fn().mockResolvedValue({ data: [] }) },
-  };
-  return {
-    users: { ...api.users, ...overrides.users },
-    repos: { ...api.repos, ...overrides.repos },
-    pulls: { ...api.pulls, ...overrides.pulls },
-  } satisfies GitHubApi;
-}
 
 describe('createGitHubClient', () => {
   it('usa el Octokit inyectado sin crear ninguno real', () => {
