@@ -59,7 +59,7 @@ describe('createServiceApp', () => {
     const man = await app.inject({ method: 'GET', url: '/internal/manifest', headers: HEADER });
     expect(health.statusCode).toBe(200);
     expect(health.json()).toEqual({ ok: true });
-    expect(man.json()).toEqual(manifest);
+    expect(man.json()).toEqual({ ...manifest, defaultSettings: {} });
   });
 
   it('ruta inexistente con token → 404 { code, message }', async () => {

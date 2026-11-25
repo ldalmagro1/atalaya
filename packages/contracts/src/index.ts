@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ToolManifest } from './tools.js';
 
 export const PROJECT_NAME = 'Atalaya';
 
@@ -23,17 +24,9 @@ export const healthResponseSchema = z.object({
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
 
 /** Respuesta de `GET /api/tools` del gateway (manifiestos de las herramientas que responden). */
-export const toolsResponseSchema = z.object({
-  tools: z.array(
-    z.object({
-      id: z.string(),
-      name: z.string(),
-      description: z.string(),
-      version: z.string(),
-    }),
-  ),
-});
+export const toolsResponseSchema = z.object({ tools: z.array(ToolManifest) });
 export type ToolsResponse = z.infer<typeof toolsResponseSchema>;
 
 export * from './repoConfig.js';
+export * from './tools.js';
 export * from './mcp.js';

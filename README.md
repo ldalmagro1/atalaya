@@ -132,18 +132,33 @@ atalaya/
 └─ DECISIONES.md    decisiones tomadas fuera de lo especificado
 ```
 
+## Configuración por repositorio
+
+Cada repositorio tiene una sección por herramienta (`enabled` y `settings`) que se escribe con `PUT /api/repos/:id/tools/:toolId`. El gateway pide la validación al servicio (`POST /internal/settings/validate`) y guarda los valores normalizados:
+
+| Respuesta              | Cuándo                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| 200                    | Se guardó; devuelve el repositorio actualizado.                                   |
+| 400 `INVALID_SETTINGS` | El servicio rechazó los settings; `errors` trae `{ path, message }`.              |
+| 404 `TOOL_NOT_FOUND`   | La herramienta no está registrada (`REPO_NOT_FOUND` si no existe el repositorio). |
+| 502 `TOOL_UNAVAILABLE` | El servicio no responde o contesta algo inesperado; no se guarda nada.            |
+
+`GET /api/repos/:id` incluye `toolsResolved`: la sección guardada de cada herramienta registrada o, si no hay, deshabilitada con sus `defaultSettings`. Si el servicio no responde, lleva `unavailable: true`. `PUT /api/repos/:id/config` sigue sirviendo para GitHub y Jira, pero rechaza con 400 `TOOLS_NOT_EDITABLE` cualquier cambio en `tools`.
+
 ## Cómo crear una herramienta nueva
 
 Cada herramienta es un servicio con su carpeta, su puerto y sus tablas (ADR-001 y ADR-003). El punto de partida es `pr-reviewer/`:
 
 1. **Copiar la carpeta** `pr-reviewer/` a la raíz con el nombre de la herramienta (por ejemplo, `forecast/`) y cambiar en ella:
    - `package.json`: el `name` (`@atalaya/forecast`).
-   - `src/index.ts`: el `id`, el `name`, la `description` y el `version` que pasa a `createServiceApp`, el `service` y el prefijo de tablas (`forecast_`) que pasa a `runMigrations`.
+   - `src/app.ts`: el `id` (el mismo del registro del gateway, con guion bajo si hace falta), el `name`, la `description` y el `version` que pasa a `createServiceApp`.
+   - `src/settings.ts`: el schema zod de la configuración por repositorio y sus `defaultSettings`, que deben cumplirlo.
+   - `src/index.ts`: el `service` y el prefijo de tablas (`forecast_`) que pasa a `runMigrations`.
    - `src/config.ts`: el nombre de la variable del puerto (`FORECAST_PORT`).
-   - `README.md`, `db/migrations/` (vacía; las migraciones son `NNN_nombre.sql` y sus objetos llevan el prefijo) y `src/config.test.ts`.
+   - `README.md`, `db/migrations/` (vacía; las migraciones son `NNN_nombre.sql` y sus objetos llevan el prefijo) y los tests (`src/config.test.ts` y `src/app.test.ts`).
 2. **Declarar sus variables** en `.env.example` (`FORECAST_PORT=3102`). El token interno y `DB_PATH` son los mismos para todos.
 3. **Agregarla a `workspaces`** y al script `dev` del `package.json` de la raíz, y correr `npm install`.
 4. **Agregar su regla de aislamiento** en `eslint.config.js`: una herramienta no importa código de otra ni de `gateway/`.
-5. **Registrarla en el gateway** para que enrute `/api/tools/forecast/*`.
+5. **Registrarla en el gateway**: una línea en `gateway/src/tools.config.ts` y su puerto en `gateway/src/config.ts`. Con eso aparece en `GET /api/tools`, el gateway enruta `/api/tools/forecast/*` y se puede habilitar por repositorio.
 
-El servicio responde a pedidos con el encabezado `X-Atalaya-Internal-Token`, escucha solo en `127.0.0.1` y nunca habilita CORS; `createServiceApp` y `listenLocal` de `@atalaya/core` ya lo garantizan. Las migraciones que toquen objetos fuera del prefijo del servicio, o declaren claves foráneas hacia tablas de otro, se rechazan al arrancar.
+El servicio responde a pedidos con el encabezado `X-Atalaya-Internal-Token`, escucha solo en `127.0.0.1` y nunca habilita CORS; `createServiceApp` y `listenLocal` de `@atalaya/core` ya lo garantizan. La fábrica también publica `defaultSettings` en el manifiesto y valida con `validateSettings` (`settingsValidator(schema)`); un servicio que no los declare solo admite `{}`. Las migraciones que toquen objetos fuera del prefijo del servicio, o declaren claves foráneas hacia tablas de otro, se rechazan al arrancar.

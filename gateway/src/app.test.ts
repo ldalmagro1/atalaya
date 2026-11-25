@@ -132,6 +132,7 @@ describe('gateway', () => {
             name: 'Revisor de prueba',
             description: 'Servicio falso para los tests.',
             version: '1.2.3',
+            defaultSettings: {},
           },
         ],
       });

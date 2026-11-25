@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { AppError, type Db } from '@atalaya/core';
 import { RepoConfig, defaultRepoConfig, type Repo } from '@atalaya/contracts';
 
@@ -84,6 +85,25 @@ export class RepoStore {
     const created = this.get(Number(result.lastInsertRowid));
     if (!created) throw new Error('No se pudo leer el repositorio recién creado');
     return created;
+  }
+
+  /**
+   * Secciones `tools` guardadas, aunque el resto de la config sea inválido (para poder
+   * repararlo sin perderlas); `{}` si no se pueden leer y `null` si el repo no existe.
+   */
+  getStoredTools(id: number): RepoConfig['tools'] | null {
+    const row = this.db
+      .prepare<[number], Pick<RepoRow, 'config_json'>>(
+        'SELECT config_json FROM gateway_repos WHERE id = ?',
+      )
+      .get(id);
+    if (!row) return null;
+    try {
+      const stored: unknown = JSON.parse(row.config_json);
+      return z.object({ tools: RepoConfig.shape.tools }).parse(stored).tools;
+    } catch {
+      return {};
+    }
   }
 
   /** Reemplaza la config completa; `null` si el repo no existe. */

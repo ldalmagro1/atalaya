@@ -1,10 +1,20 @@
 # pr-reviewer
 
-Primera herramienta de Atalaya: lee pull requests de GitHub y ayuda a revisarlos con Claude. Es un servicio propio (puerto `3101`) que el gateway enruta en `/api/tools/pr-reviewer/*`.
+Primera herramienta de Atalaya: lee pull requests de GitHub y ayuda a revisarlos con Claude. Es un servicio propio (puerto `3101`) que el gateway enruta en `/api/tools/pr_reviewer/*`.
 
-Hoy solo trae la base del servicio: `GET /internal/health` y `GET /internal/manifest`, creados con `createServiceApp` de `@atalaya/core`. La lógica de revisión llega en las historias del épico.
+Hoy trae la base del servicio, creada con `createServiceApp` de `@atalaya/core`: `GET /internal/health`, `GET /internal/manifest` y `POST /internal/settings/validate`. La lógica de revisión llega en las historias del épico.
 
-## Configuración
+## Configuración por repositorio
+
+El schema vive en `src/settings.ts`:
+
+| Campo       | Qué es                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `contextMd` | Contexto del repositorio en Markdown (hasta 50000 caracteres). Por defecto, una plantilla. |
+
+No hay selección de proveedor ni de modelo de IA: la revisión la hace Claude desde la sesión del usuario (ADR-002).
+
+## Variables de entorno
 
 `src/config.ts` lee y valida, una sola vez, estas variables del `.env` de la raíz (ver `.env.example`):
 

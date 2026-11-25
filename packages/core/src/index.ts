@@ -12,6 +12,7 @@ export {
   type ServiceManifest,
 } from './service/create-service-app.js';
 export { parseServiceMcp, toolInputSchema, type McpToolRegistration } from './service/mcp.js';
+export { settingsValidator, type Settings, type SettingsValidator } from './service/settings.js';
 export { listenLocal, LOCAL_HOST } from './service/listen-local.js';
 export {
   createGitHubClient,
