@@ -7,6 +7,7 @@ export { MigrationError } from './db/validate-migration.js';
 export {
   createServiceApp,
   INTERNAL_TOKEN_HEADER,
+  requireInternalToken,
   type CreateServiceAppOptions,
   type ServiceManifest,
 } from './service/create-service-app.js';

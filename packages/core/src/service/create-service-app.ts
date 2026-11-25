@@ -25,6 +25,21 @@ function tokenMatches(received: unknown, expected: Buffer): boolean {
   return timingSafeEqual(digest(received), expected);
 }
 
+/** Agrega a `app` (o a un contexto encapsulado) el 401 `INVALID_INTERNAL_TOKEN` sin token válido. */
+export function requireInternalToken(app: FastifyInstance, internalToken: string): void {
+  if (internalToken.length === 0) throw new Error('internalToken no puede estar vacío');
+  const expected = digest(internalToken);
+  app.addHook('onRequest', async (request, reply) => {
+    if (!tokenMatches(request.headers[INTERNAL_TOKEN_HEADER], expected)) {
+      return reply.code(401).send({
+        code: 'INVALID_INTERNAL_TOKEN',
+        message: 'Falta el token interno o es incorrecto.',
+      });
+    }
+    return undefined;
+  });
+}
+
 /**
  * Crea la app Fastify base de un servicio de herramienta (ADR-001): sin CORS, protegida
  * por el token interno, con `health` y `manifest`, y sin token ni credenciales en los logs.
@@ -32,7 +47,6 @@ function tokenMatches(received: unknown, expected: Buffer): boolean {
 export function createServiceApp(options: CreateServiceAppOptions): FastifyInstance {
   const { internalToken, logger, ...manifest } = options;
   if (internalToken.length === 0) throw new Error('internalToken no puede estar vacío');
-  const expected = digest(internalToken);
 
   const app = Fastify({
     logger: {
@@ -52,15 +66,7 @@ export function createServiceApp(options: CreateServiceAppOptions): FastifyInsta
 
   registerErrorHandling(app);
 
-  app.addHook('onRequest', async (request, reply) => {
-    if (!tokenMatches(request.headers[INTERNAL_TOKEN_HEADER], expected)) {
-      return reply.code(401).send({
-        code: 'INVALID_INTERNAL_TOKEN',
-        message: 'Falta el token interno o es incorrecto.',
-      });
-    }
-    return undefined;
-  });
+  requireInternalToken(app, internalToken);
 
   app.get('/internal/health', async () => ({ ok: true }));
   app.get('/internal/manifest', async () => ({
