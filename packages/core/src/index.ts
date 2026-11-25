@@ -11,6 +11,7 @@ export {
   type CreateServiceAppOptions,
   type ServiceManifest,
 } from './service/create-service-app.js';
+export { parseServiceMcp, toolInputSchema, type McpToolRegistration } from './service/mcp.js';
 export { listenLocal, LOCAL_HOST } from './service/listen-local.js';
 export {
   createGitHubClient,

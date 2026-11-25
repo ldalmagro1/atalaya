@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "mcp": "tsx src/mcp/server.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
@@ -13,6 +14,7 @@
     "@atalaya/contracts": "*",
     "@atalaya/core": "*",
     "@fastify/cors": "^11.4.3",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "fastify": "^5.12.8",
     "zod": "^4.6.7"
   }
