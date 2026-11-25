@@ -87,3 +87,16 @@ Decisiones tomadas durante ATAL-5 que la historia no fijaba.
 - **Scrim del modal.** Usa `bg-black/60`: `background-950` es el color más claro en tema oscuro y aclaraba la página. Es el único color fijo fuera de los estados.
 - **`MarkdownView` restituye listas, tablas y citas.** El preflight de Tailwind les quita viñetas, numeración y bordes; se definen `ul`, `ol`, `blockquote`, `table`, `th` y `td` con clases de la paleta.
 - **Fondo negro en tema oscuro.** Tras ver la paleta turquesa, Lucas pidió un fondo negro. La escala `background` del tema oscuro pasa a gris neutro sin tinte (`background-50` es `0 0 0`; las tarjetas usan `background-100`, `15 15 15`), y los verdes quedan como color de énfasis (botón primario, enlaces, foco). El tema claro conserva su fondo con tinte turquesa. Los tests de contraste siguen pasando (texto 16,5:1 y enlaces 11,7:1 sobre las tarjetas oscuras).
+
+## ATAL-14
+
+- **`z.record` con dos argumentos.** La historia escribe `z.record(z.unknown())`, que en zod 4 no existe. Se usa `z.record(z.string(), z.unknown())`, equivalente.
+- **Owner y name sin distinguir mayúsculas.** Se guardan tal cual los escribe el usuario, pero el alta (409 `REPO_EXISTS`) y la ruta interna comparan con `COLLATE NOCASE`, porque GitHub no distingue mayúsculas y el `UNIQUE(owner, name)` de la migración sí. La migración queda idéntica a la de la historia.
+- **Formato de owner y name.** `POST /api/repos` valida con el patrón de GitHub: owner de letras, números y guiones (hasta 39, sin empezar con guion); name de letras, números, `.`, `_` y `-` (hasta 100, y no `.` ni `..`). La misma validación protege la ruta interna.
+- **Forma de las respuestas.** `Repo` es `{ id, owner, name, config, createdAt, updatedAt }` (fechas tal como las guarda SQLite, en UTC). `GET /api/repos` devuelve `{ repos: Repo[] }` con la config parseada; la ruta interna devuelve el mismo `Repo`. Los schemas viven en `packages/contracts/src/repoConfig.ts`.
+- **Códigos HTTP no fijados por la historia.** Crear responde 201; borrar, 204; un id inexistente, 404 `REPO_NOT_FOUND`; un id que no es entero positivo, 400 `VALIDATION_ERROR`.
+- **Ruta interna sin CORS.** El gateway tiene CORS, pero la historia pide que `/internal/repos/*` no lo tenga. El plugin de CORS se registra solo en el contexto de `/api`, y la ruta interna vive en otro contexto con su propio chequeo de token. Un test verifica que no devuelve `access-control-*` ni a un origen permitido.
+- **`requireInternalToken` en core.** La comparación del token (hash SHA-256 y `timingSafeEqual`) se extrae de `createServiceApp` a `requireInternalToken(app, token)`, para que el gateway la reutilice en su ruta interna sin duplicarla. `createServiceApp` se comporta igual.
+- **Config guardada inválida.** Al leer (detalle, lista o ruta interna) se hace `RepoConfig.parse`; si falla, 500 `INVALID_STORED_CONFIG` con el repo y los campos que fallan, sin repararla. Un solo repo corrupto hace fallar también la lista.
+- **`buildApp` recibe `db`.** El gateway ya abría la base en `index.ts`; ahora se la pasa a `buildApp`. Los tests usan una base en memoria con las migraciones reales (`gateway/src/test-db.ts`).
+- **Fuera de alcance.** Verificar que el repo exista en GitHub (ATAL-16), validar los `settings` de cada herramienta (ATAL-18) y la interfaz web.

@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createServiceApp, listenLocal } from '@atalaya/core';
 import { ALLOWED_ORIGINS, buildApp } from './app.js';
+import { createTestDb } from './test-db.js';
 
 const TOKEN = 'tok-' + 'a1b2c3d4'.repeat(5);
 const COOKIE = 'sesion=valor-de-cookie-secreta';
@@ -62,6 +63,7 @@ describe('gateway', () => {
     service = await startFakeService(TOKEN);
     logs = [];
     gateway = await buildApp({
+      db: createTestDb(),
       internalToken: TOKEN,
       tools: [{ id: 'pr_reviewer', baseUrl: service.baseUrl }],
       healthTimeoutMs: 500,
@@ -87,6 +89,7 @@ describe('gateway', () => {
 
     it('marca ok: false una herramienta caída sin caerse', async () => {
       const down = await buildApp({
+        db: createTestDb(),
         internalToken: TOKEN,
         tools: [{ id: 'pr_reviewer', baseUrl: await closedPortUrl() }],
         healthTimeoutMs: 500,
@@ -103,6 +106,7 @@ describe('gateway', () => {
 
     it('marca ok: false una herramienta que rechaza el token interno', async () => {
       const wrong = await buildApp({
+        db: createTestDb(),
         internalToken: 'otro-' + 'z'.repeat(32),
         tools: [{ id: 'pr_reviewer', baseUrl: service.baseUrl }],
         logger: { level: 'silent' },
@@ -210,6 +214,7 @@ describe('gateway', () => {
 
     it('servicio caído → 502 TOOL_UNAVAILABLE', async () => {
       const down = await buildApp({
+        db: createTestDb(),
         internalToken: TOKEN,
         tools: [{ id: 'pr_reviewer', baseUrl: await closedPortUrl() }],
         logger: { level: 'silent' },
@@ -222,6 +227,7 @@ describe('gateway', () => {
 
     it('servicio que no responde a tiempo → 502 TOOL_UNAVAILABLE', async () => {
       const slow = await buildApp({
+        db: createTestDb(),
         internalToken: TOKEN,
         tools: [{ id: 'pr_reviewer', baseUrl: service.baseUrl }],
         fetchFn: (_input, init) =>
@@ -262,6 +268,7 @@ describe('gateway', () => {
         gateway.inject({ method: 'GET', url: '/api/nada', headers: sensitive }),
       ]);
       const down = await buildApp({
+        db: createTestDb(),
         internalToken: TOKEN,
         tools: [{ id: 'pr_reviewer', baseUrl: await closedPortUrl() }],
         logger: { level: 'debug', stream: { write: (message) => logs.push(message) } },
