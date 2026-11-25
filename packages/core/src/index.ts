@@ -3,6 +3,7 @@ export const CORE_PACKAGE = '@atalaya/core';
 export { AppError, registerErrorHandling, type ErrorBody } from './lib/errors.js';
 export { openDatabase, type Db, type OpenDatabaseOptions } from './db/open.js';
 export { runMigrations, type RunMigrationsOptions } from './db/migrate.js';
+export { runCoreMigrations } from './db/core-migrations.js';
 export { MigrationError } from './db/validate-migration.js';
 export {
   createServiceApp,
@@ -25,6 +26,15 @@ export {
   type GitHubErrorKind,
 } from './github/errors.js';
 export { checkRepoAccess, getAuthStatus } from './github/check.js';
+export { GitHubRepoProvider } from './github/repo-provider.js';
+export type {
+  InlineComment,
+  PullDetail,
+  PullFile,
+  PullSummary,
+  RepoProvider,
+  RepoRef,
+} from './github/types.js';
 export {
   createJiraProvider,
   type CreateJiraProviderOptions,

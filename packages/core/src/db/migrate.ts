@@ -58,11 +58,18 @@ export function runMigrations({ db, service, prefix, dir }: RunMigrationsOptions
   for (const { name, sql } of pending) validateMigration(sql, prefix, `${service}/${name}`);
 
   const insert = db.prepare('INSERT INTO core_migrations (service, name) VALUES (?, ?)');
+  const isApplied = db.prepare('SELECT 1 FROM core_migrations WHERE service = ? AND name = ?');
+  const ran: string[] = [];
   for (const { name, sql } of pending) {
-    db.transaction(() => {
+    // `immediate` toma el bloqueo de escritura antes de releer: si otro proceso aplicó la
+    // migración desde la lectura de arriba, se salta en vez de ejecutarla dos veces.
+    const apply = db.transaction(() => {
+      if (isApplied.get(service, name)) return;
       db.exec(sql);
       insert.run(service, name);
-    })();
+      ran.push(name);
+    });
+    apply.immediate();
   }
-  return pending.map((migration) => migration.name);
+  return ran;
 }

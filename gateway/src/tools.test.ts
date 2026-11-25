@@ -11,6 +11,7 @@ import {
 import { InvalidSettingsResponse, Repo, RepoDetail, toolsResponseSchema } from '@atalaya/contracts';
 import { buildApp } from './app.js';
 import { createTestDb } from './test-db.js';
+import { fakeGitHub } from './test-github.js';
 import { registeredTools } from './tools.config.js';
 import type { FetchFn } from './upstream.js';
 
@@ -49,6 +50,7 @@ async function startGateway(tools: { id: string; baseUrl: string }[], fetchFn?: 
     internalToken: TOKEN,
     tools,
     fetchFn,
+    octokit: fakeGitHub(),
     healthTimeoutMs: 500,
     proxyTimeoutMs: 500,
     logger: { level: 'silent' },

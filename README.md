@@ -134,6 +134,8 @@ atalaya/
 
 ## Configuración por repositorio
 
+El alta (`POST /api/repos` con `{ owner, name }`) verifica que el repositorio exista en GitHub, por lo que requiere `GITHUB_TOKEN`. Sin token responde 503 `GITHUB_NOT_CONFIGURED`; si el repositorio no existe o el token no tiene acceso, 404 `REPO_NOT_FOUND_OR_NO_ACCESS`. En esos casos no se guarda nada.
+
 Cada repositorio tiene una sección por herramienta (`enabled` y `settings`) que se escribe con `PUT /api/repos/:id/tools/:toolId`. El gateway pide la validación al servicio (`POST /internal/settings/validate`) y guarda los valores normalizados:
 
 | Respuesta              | Cuándo                                                                            |
@@ -145,6 +147,12 @@ Cada repositorio tiene una sección por herramienta (`enabled` y `settings`) que
 
 `GET /api/repos/:id` incluye `toolsResolved`: la sección guardada de cada herramienta registrada o, si no hay, deshabilitada con sus `defaultSettings`. Si el servicio no responde, lleva `unavailable: true`. `PUT /api/repos/:id/config` sigue sirviendo para GitHub y Jira, pero rechaza con 400 `TOOLS_NOT_EDITABLE` cualquier cambio en `tools`.
 
+## Lectura de GitHub
+
+Las herramientas leen repositorios y pull requests con `RepoProvider` (`GitHubRepoProvider` de `@atalaya/core`), nunca con Octokit. Cada proceso la crea con `createGitHubClient` y el token de su `config.ts`, después de llamar a `runCoreMigrations(db)`. La única escritura posible es `createCommentReview`, que siempre publica con `event: 'COMMENT'`.
+
+Las respuestas se guardan en la tabla `core_gh_cache`: las listas y los detalles se revalidan con `If-None-Match` (un 304 no consume el límite de uso) y el contenido de un archivo por sha no se vuelve a pedir. La caché incluye contenido de repositorios privados sin cifrar en `DB_PATH`; `clearCache()` la vacía.
+
 ## Cómo crear una herramienta nueva
 
 Cada herramienta es un servicio con su carpeta, su puerto y sus tablas (ADR-001 y ADR-003). El punto de partida es `pr-reviewer/`:
@@ -153,7 +161,7 @@ Cada herramienta es un servicio con su carpeta, su puerto y sus tablas (ADR-001 
    - `package.json`: el `name` (`@atalaya/forecast`).
    - `src/app.ts`: el `id` (el mismo del registro del gateway, con guion bajo si hace falta), el `name`, la `description` y el `version` que pasa a `createServiceApp`.
    - `src/settings.ts`: el schema zod de la configuración por repositorio y sus `defaultSettings`, que deben cumplirlo.
-   - `src/index.ts`: el `service` y el prefijo de tablas (`forecast_`) que pasa a `runMigrations`.
+   - `src/index.ts`: el `service` y el prefijo de tablas (`forecast_`) que pasa a `runMigrations` (la llamada a `runCoreMigrations` se conserva).
    - `src/config.ts`: el nombre de la variable del puerto (`FORECAST_PORT`).
    - `README.md`, `db/migrations/` (vacía; las migraciones son `NNN_nombre.sql` y sus objetos llevan el prefijo) y los tests (`src/config.test.ts` y `src/app.test.ts`).
 2. **Declarar sus variables** en `.env.example` (`FORECAST_PORT=3102`). El token interno y `DB_PATH` son los mismos para todos.

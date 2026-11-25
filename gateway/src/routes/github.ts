@@ -10,6 +10,13 @@ export interface GitHubOptions {
   store: RepoStore;
 }
 
+export const githubNotConfigured = () =>
+  new AppError(
+    'GITHUB_NOT_CONFIGURED',
+    'No hay GITHUB_TOKEN configurado: defínalo en .env y reinicie el gateway.',
+    503,
+  );
+
 /** `GET /github/status` y `POST /repos/:id/github/check` (se registran bajo `/api`). */
 export const githubRoutes: FastifyPluginAsync<GitHubOptions> = async (app, { github, store }) => {
   app.get('/github/status', async (): Promise<GitHubStatus> => {
@@ -19,13 +26,7 @@ export const githubRoutes: FastifyPluginAsync<GitHubOptions> = async (app, { git
 
   app.post('/repos/:id/github/check', async (request): Promise<RepoCheckResult> => {
     const { id } = z.object({ id: z.coerce.number().int().positive() }).parse(request.params);
-    if (!github) {
-      throw new AppError(
-        'GITHUB_NOT_CONFIGURED',
-        'No hay GITHUB_TOKEN configurado: defínalo en .env y reinicie el gateway.',
-        503,
-      );
-    }
+    if (!github) throw githubNotConfigured();
     const repo = store.get(id);
     if (!repo) throw new AppError('REPO_NOT_FOUND', `No existe el repositorio ${id}.`, 404);
 

@@ -69,8 +69,8 @@ export class RepoStore {
     return row ? toRepo(row) : null;
   }
 
-  /** Crea el repo con la config por defecto; 409 `REPO_EXISTS` si ya existe. */
-  create(owner: string, name: string): Repo {
+  /** 409 `REPO_EXISTS` si ya está registrado, aunque su config guardada sea inválida. */
+  assertNotRegistered(owner: string, name: string): void {
     const exists = this.db
       .prepare<[string, string], { id: number }>(
         `SELECT id FROM gateway_repos WHERE owner = ? COLLATE NOCASE AND name = ? COLLATE NOCASE`,
@@ -79,6 +79,11 @@ export class RepoStore {
     if (exists) {
       throw new AppError('REPO_EXISTS', `El repositorio ${owner}/${name} ya está registrado.`, 409);
     }
+  }
+
+  /** Crea el repo con la config por defecto; 409 `REPO_EXISTS` si ya existe. */
+  create(owner: string, name: string): Repo {
+    this.assertNotRegistered(owner, name);
     const result = this.db
       .prepare('INSERT INTO gateway_repos (owner, name, config_json) VALUES (?, ?, ?)')
       .run(owner, name, JSON.stringify(defaultRepoConfig()));

@@ -28,7 +28,7 @@ Requiere Node 24 o superior (usa `process.loadEnvFile`).
 
 ## Base de datos
 
-Las tablas de esta herramienta llevan el prefijo `prreviewer_` y sus migraciones viven en `db/migrations/` (`NNN_nombre.sql`). Al arrancar, `runMigrations` aplica las pendientes y rechaza cualquier objeto fuera del prefijo o clave foránea hacia otro servicio (ADR-003).
+Las tablas de esta herramienta llevan el prefijo `prreviewer_` y sus migraciones viven en `db/migrations/` (`NNN_nombre.sql`). Al arrancar, `runCoreMigrations` crea las tablas compartidas de la librería (`core_`) y `runMigrations` aplica las pendientes y rechaza cualquier objeto fuera del prefijo o clave foránea hacia otro servicio (ADR-003).
 
 ## Cómo correrlo
 

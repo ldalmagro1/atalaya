@@ -4,6 +4,7 @@ import type { Db } from '@atalaya/core';
 import { Repo, RepoListResponse, defaultRepoConfig } from '@atalaya/contracts';
 import { buildApp } from './app.js';
 import { createTestDb } from './test-db.js';
+import { fakeGitHub } from './test-github.js';
 
 const TOKEN = 'tok-' + 'a1b2c3d4'.repeat(5);
 const AUTH = { 'x-atalaya-internal-token': TOKEN };
@@ -14,7 +15,13 @@ describe('repos', () => {
 
   beforeEach(async () => {
     db = createTestDb();
-    app = await buildApp({ db, internalToken: TOKEN, tools: [], logger: { level: 'silent' } });
+    app = await buildApp({
+      db,
+      internalToken: TOKEN,
+      tools: [],
+      octokit: fakeGitHub(),
+      logger: { level: 'silent' },
+    });
   });
   afterEach(async () => {
     await app.close();

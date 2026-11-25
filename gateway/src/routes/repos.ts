@@ -1,7 +1,7 @@
 import { isDeepStrictEqual } from 'node:util';
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
-import { AppError, requireInternalToken } from '@atalaya/core';
+import { AppError, requireInternalToken, type RepoProvider } from '@atalaya/core';
 import {
   CreateRepoBody,
   RepoConfig,
@@ -13,6 +13,7 @@ import type { RepoStore } from '../repos/repo-store.js';
 import { resolveTools } from '../repos/resolve-tools.js';
 import type { ToolEntry } from '../tools.config.js';
 import type { Upstream } from '../upstream.js';
+import { githubNotConfigured } from './github.js';
 
 const IdParams = z.object({ id: z.coerce.number().int().positive() });
 
@@ -24,16 +25,22 @@ export interface RepoRoutesOptions {
   upstream: Upstream;
   tools: ToolEntry[];
   manifestTimeoutMs: number;
+  /** Lectura de GitHub para verificar las altas; `null` si no hay `GITHUB_TOKEN`. */
+  repoProvider: RepoProvider | null;
 }
 
 /** CRUD de repositorios para la web: `/repos` (se registra bajo `/api`). */
 export const repoRoutes: FastifyPluginAsync<RepoRoutesOptions> = async (app, options) => {
-  const { store, upstream, tools, manifestTimeoutMs } = options;
+  const { store, upstream, tools, manifestTimeoutMs, repoProvider } = options;
 
   app.get('/repos', async () => ({ repos: store.list() }));
 
   app.post('/repos', async (request, reply) => {
     const { owner, name } = CreateRepoBody.parse(request.body);
+    if (!repoProvider) throw githubNotConfigured();
+    store.assertNotRegistered(owner, name);
+    // Lanza `REPO_NOT_FOUND_OR_NO_ACCESS` (404) u otro error de GitHub: entonces no se guarda.
+    await repoProvider.getRepo({ owner, name });
     return reply.code(201).send(store.create(owner, name));
   });
 

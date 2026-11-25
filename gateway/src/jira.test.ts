@@ -4,6 +4,7 @@ import { AppError, type Db, type JiraProvider } from '@atalaya/core';
 import { JiraCheckResult, Repo, defaultRepoConfig } from '@atalaya/contracts';
 import { buildApp } from './app.js';
 import { createTestDb } from './test-db.js';
+import { fakeGitHub } from './test-github.js';
 
 const INTERNAL = 'tok-' + 'a1b2c3d4'.repeat(5);
 const JIRA_TOKEN = 'jira_token_SECRETO_DE_PRUEBA_987654';
@@ -25,6 +26,7 @@ describe('Jira', () => {
       db,
       internalToken: INTERNAL,
       tools: [],
+      octokit: fakeGitHub(),
       ...options,
       logger: { level: 'debug', stream: { write: (message) => logs.push(message) } },
     });
