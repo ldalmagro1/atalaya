@@ -27,7 +27,15 @@ describe('schemas del gateway', () => {
 
   it('acepta el listado de herramientas', () => {
     const lista = {
-      tools: [{ id: 'pr_reviewer', name: 'Revisor', description: 'd', version: '0.0.0' }],
+      tools: [
+        {
+          id: 'pr_reviewer',
+          name: 'Revisor',
+          description: 'd',
+          version: '0.0.0',
+          defaultSettings: {},
+        },
+      ],
     };
     expect(toolsResponseSchema.safeParse(lista).success).toBe(true);
     expect(toolsResponseSchema.safeParse({ tools: [{ id: 1 }] }).success).toBe(false);

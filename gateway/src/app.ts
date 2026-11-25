@@ -10,6 +10,7 @@ import {
 } from '@atalaya/core';
 import type { JiraCredentials } from './config.js';
 import { RepoStore } from './repos/repo-store.js';
+import { repoToolRoutes } from './routes/repo-tools.js';
 import { internalRepoRoutes, repoRoutes } from './routes/repos.js';
 import { healthRoutes } from './routes/health.js';
 import { githubRoutes } from './routes/github.js';
@@ -83,7 +84,18 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
           githubConfigured: github !== null,
           jiraConfigured: jira !== null,
         });
-        await api.register(repoRoutes, { store });
+        await api.register(repoRoutes, {
+          store,
+          upstream,
+          tools,
+          manifestTimeoutMs: options.healthTimeoutMs ?? 1500,
+        });
+        await api.register(repoToolRoutes, {
+          store,
+          upstream,
+          tools,
+          validateTimeoutMs: options.proxyTimeoutMs ?? 30_000,
+        });
         await api.register(githubRoutes, { store, github });
         await api.register(jiraRoutes, { store, jira });
         await api.register(mcpRoutes, {

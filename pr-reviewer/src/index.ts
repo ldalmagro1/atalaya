@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
-import { createServiceApp, listenLocal, openDatabase, runMigrations } from '@atalaya/core';
+import { listenLocal, openDatabase, runMigrations } from '@atalaya/core';
+import { buildApp } from './app.js';
 import { loadConfig, loadEnvFile } from './config.js';
 
 loadEnvFile();
@@ -13,13 +14,7 @@ runMigrations({
   dir: resolve(import.meta.dirname, '..', 'db', 'migrations'),
 });
 
-const app = createServiceApp({
-  id: 'pr-reviewer',
-  name: 'Revisor de pull requests',
-  description: 'Lee pull requests de GitHub y ayuda a revisarlos con Claude.',
-  version: '0.0.0',
-  internalToken: config.internalToken,
-});
+const app = buildApp({ internalToken: config.internalToken });
 
 app.addHook('onClose', async () => {
   db.close();

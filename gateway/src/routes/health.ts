@@ -1,31 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
+import { fetchManifest } from '../tool-service.js';
 import type { ToolEntry } from '../tools.config.js';
 import { callTool, type Upstream } from '../upstream.js';
-
-const manifestSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
-  version: z.string(),
-});
-export type ToolManifest = z.infer<typeof manifestSchema>;
-
-/** Lee el manifiesto de una herramienta; `null` si no responde o responde algo inválido. */
-export async function fetchManifest(
-  upstream: Upstream,
-  tool: ToolEntry,
-  timeoutMs: number,
-): Promise<ToolManifest | null> {
-  try {
-    const res = await callTool(upstream, tool, '/internal/manifest', { timeoutMs });
-    if (!res.ok) return null;
-    const parsed = manifestSchema.safeParse(await res.json());
-    return parsed.success ? parsed.data : null;
-  } catch {
-    return null;
-  }
-}
 
 async function isHealthy(upstream: Upstream, tool: ToolEntry, timeoutMs: number) {
   try {
@@ -78,16 +55,7 @@ export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (app,
     );
     return {
       tools: manifests.flatMap(({ tool, manifest }) =>
-        manifest
-          ? [
-              {
-                id: tool.id,
-                name: manifest.name,
-                description: manifest.description,
-                version: manifest.version,
-              },
-            ]
-          : [],
+        manifest ? [{ ...manifest, id: tool.id }] : [],
       ),
     };
   });

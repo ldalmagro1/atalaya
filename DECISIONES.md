@@ -141,3 +141,19 @@ Decisiones tomadas durante ATAL-5 que la historia no fijaba.
 - **Errores del proceso MCP.** Con el gateway caído, `tools/list` y `prompts/list` fallan con un error MCP que lo explica; `tools/call` devuelve un resultado `isError` con el mismo texto, para que Claude lo lea. Todas las llamadas tienen tiempo máximo (10 s el manifiesto, 60 s las herramientas), así que no se cuelga. Los logs van a stderr (stdout es el protocolo) y no incluyen tokens ni cuerpos.
 - **`readOnlyHint`.** Cada herramienta se anuncia con `readOnlyHint: true` si es `read` y `false` si es `draft`.
 - **Fuera de alcance.** Las herramientas reales del revisor y el envoltorio de «dato no confiable» de su contenido (ATAL-8). `pr-reviewer` no declara nada todavía.
+
+## ATAL-18
+
+- **`PUT /api/repos/:id/config` ya no cambia `tools` (elegido por Lucas).** Los settings solo entran por `PUT /api/repos/:id/tools/:toolId`, validados por su servicio. La ruta de ATAL-14 acepta el body solo si `tools` es igual a lo guardado (sin importar el orden de las claves); si difiere, 400 `TOOLS_NOT_EDITABLE` y no guarda nada. Se prefiere rechazar a ignorar en silencio. Se ajustaron los tests de ATAL-14.
+- **Reparar una config inválida.** Esa ruta sigue siendo la forma de corregir una config guardada que no pasa `RepoConfig`: si las secciones de `tools` se pueden leer, hay que enviarlas iguales; si no, solo se acepta `tools: {}`.
+- **Servicio caído sin sección guardada (elegido por Lucas).** `toolsResolved` devuelve `{ enabled: false, settings: {}, unavailable: true }`; el gateway no guarda manifiestos. `unavailable` solo aparece cuando es `true`.
+- **Plantilla en español neutro (elegido por Lucas).** La `contextMd` por defecto cambia «Describí» por «Describe»; el resto es el texto de la historia.
+- **`PUT` de una herramienta.** El body exige `enabled` y `settings`, así que deshabilitar reenvía los settings. Se valida siempre contra el servicio, también al deshabilitar: con el servicio caído no se puede deshabilitar (502). Responde el `Repo` actualizado (sin `toolsResolved`) y relee la config después de validar para no pisar cambios simultáneos.
+- **Errores de validación.** 400 `{ code: 'INVALID_SETTINGS', message, errors: [{ path, message }] }`, con `path` separado por puntos. Un estado distinto de 2xx o una respuesta con otra forma al validar es 502 `TOOL_UNAVAILABLE`.
+- **Tiempos máximos.** El manifiesto para `toolsResolved` usa el de salud (1,5 s) y la validación, el del proxy (30 s).
+- **Secciones guardadas.** Se devuelven tal cual, sin mezclarlas con los `defaultSettings` ni revalidarlas. Las de herramientas no registradas se conservan en `config` y no aparecen en `toolsResolved`.
+- **Fábrica de servicio.** `defaultSettings` y `validateSettings` son opcionales; sin ellos el manifiesto publica `{}` y solo se admite `{}` (falla cerrado). `settingsValidator(schema)` arma el validador desde zod, que descarta las claves desconocidas salvo que el schema diga otra cosa.
+- **`ToolManifest` obligatorio completo.** El gateway considera caída a una herramienta cuyo manifiesto no cumpla el schema (id con formato `ToolId` y `defaultSettings`). El id que se publica es el del registro.
+- **Id de `pr_reviewer`.** El servicio declaraba `pr-reviewer`, que no cumple `ToolId` ni coincide con el registro; pasa a `pr_reviewer`. La app se arma en `pr-reviewer/src/app.ts` para poder probarla.
+- **Verificación de GitHub.** `github/check` releía la config antes de esperar a GitHub y podía revertir una sección guardada entretanto; ahora relee antes de escribir `defaultBranch`.
+- **Fuera de alcance.** La pantalla de configuración (ATAL-19) y leer la configuración desde `pr-reviewer` (ATAL-7).

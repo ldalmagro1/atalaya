@@ -30,10 +30,14 @@ export const githubRoutes: FastifyPluginAsync<GitHubOptions> = async (app, { git
     if (!repo) throw new AppError('REPO_NOT_FOUND', `No existe el repositorio ${id}.`, 404);
 
     const result = await checkRepoAccess(github, repo.owner, repo.name);
-    store.updateConfig(id, {
-      ...repo.config,
-      github: { ...repo.config.github, defaultBranch: result.defaultBranch },
-    });
+    // Se relee después de esperar a GitHub, para no pisar cambios hechos mientras tanto.
+    const current = store.get(id);
+    if (current) {
+      store.updateConfig(id, {
+        ...current.config,
+        github: { ...current.config.github, defaultBranch: result.defaultBranch },
+      });
+    }
     return result;
   });
 };

@@ -90,23 +90,29 @@ describe('repos', () => {
       expect(bad.statusCode).toBe(400);
     });
 
-    it('actualiza una config válida con una herramienta nueva, sin migrar la base', async () => {
+    const withTool = {
+      ...defaultRepoConfig(),
+      tools: { herramienta_nueva: { enabled: true, settings: { umbral: 3 } } },
+    };
+    /** Guarda una config directo en la base, como la dejaría la ruta de herramientas. */
+    const seed = (id: number, config: string) =>
+      db.prepare('UPDATE gateway_repos SET config_json = ? WHERE id = ?').run(config, id);
+    const putConfig = (id: number, payload: object) =>
+      app.inject({ method: 'PUT', url: `/api/repos/${id}/config`, payload });
+
+    it('actualiza github y jira conservando tools, con una clave nueva y sin migrar', async () => {
       const { id } = await createdRepo();
+      seed(id, JSON.stringify(withTool));
       const config = {
-        version: 1,
+        ...withTool,
         github: { defaultBranch: 'main' },
         jira: { projectKey: 'ATAL' },
-        tools: { herramienta_nueva: { enabled: true, settings: { umbral: 3 } } },
       };
       const migrationsBefore = db.prepare('SELECT count(*) AS n FROM core_migrations').get();
       db.prepare("UPDATE gateway_repos SET updated_at = '2000-01-01 00:00:00' WHERE id = ?").run(
         id,
       );
-      const res = await app.inject({
-        method: 'PUT',
-        url: `/api/repos/${id}/config`,
-        payload: config,
-      });
+      const res = await putConfig(id, config);
       expect(res.statusCode).toBe(200);
       const repo = Repo.parse(res.json());
       expect(repo.config).toEqual(config);
@@ -115,6 +121,36 @@ describe('repos', () => {
       expect(db.prepare('SELECT count(*) AS n FROM core_migrations').get()).toEqual(
         migrationsBefore,
       );
+    });
+
+    it.each([
+      ['agrega una sección', { ...withTool.tools, otra: { enabled: false, settings: {} } }],
+      ['quita una sección', {}],
+      ['cambia settings', { herramienta_nueva: { enabled: true, settings: { umbral: 4 } } }],
+      ['cambia enabled', { herramienta_nueva: { enabled: false, settings: { umbral: 3 } } }],
+    ])('rechaza con 400 TOOLS_NOT_EDITABLE si %s y no guarda nada', async (_caso, tools) => {
+      const { id } = await createdRepo();
+      seed(id, JSON.stringify(withTool));
+      const res = await putConfig(id, { ...withTool, jira: { projectKey: 'ATAL' }, tools });
+      expect(res.statusCode).toBe(400);
+      expect(res.json()).toMatchObject({ code: 'TOOLS_NOT_EDITABLE' });
+      expect((await read(id)).config).toEqual(withTool);
+    });
+
+    it('repara una config inválida exigiendo las secciones de tools que se pueden leer', async () => {
+      const { id } = await createdRepo();
+      seed(id, JSON.stringify({ ...withTool, version: 2 }));
+      expect((await putConfig(id, defaultRepoConfig())).statusCode).toBe(400);
+      expect((await putConfig(id, withTool)).statusCode).toBe(200);
+      expect((await read(id)).config).toEqual(withTool);
+    });
+
+    it('repara una config ilegible solo con tools vacío', async () => {
+      const { id } = await createdRepo();
+      seed(id, 'no es json');
+      expect((await putConfig(id, withTool)).statusCode).toBe(400);
+      expect((await putConfig(id, defaultRepoConfig())).statusCode).toBe(200);
+      expect((await read(id)).config).toEqual(defaultRepoConfig());
     });
 
     it.each([
