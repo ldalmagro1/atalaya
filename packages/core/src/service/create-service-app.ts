@@ -1,6 +1,8 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { registerErrorHandling } from '../lib/errors.js';
+import { AppError } from '../lib/errors.js';
+import { parseServiceMcp, type McpToolRegistration } from './mcp.js';
 
 export const INTERNAL_TOKEN_HEADER = 'x-atalaya-internal-token';
 
@@ -13,6 +15,8 @@ export interface ServiceManifest {
 
 export interface CreateServiceAppOptions extends ServiceManifest {
   internalToken: string;
+  /** Herramientas y prompts MCP del servicio (`GET /internal/mcp`). Sin esto, listas vacías. */
+  mcp?: { tools?: McpToolRegistration[]; prompts?: unknown[] };
   /** Opcional: nivel de log y destino (los tests capturan los logs con `stream`). */
   logger?: { level?: string; stream?: { write(message: string): void } };
 }
@@ -45,8 +49,14 @@ export function requireInternalToken(app: FastifyInstance, internalToken: string
  * por el token interno, con `health` y `manifest`, y sin token ni credenciales en los logs.
  */
 export function createServiceApp(options: CreateServiceAppOptions): FastifyInstance {
-  const { internalToken, logger, ...manifest } = options;
+  const { internalToken, logger, mcp, ...manifest } = options;
   if (internalToken.length === 0) throw new Error('internalToken no puede estar vacío');
+  const mcpDeclaration = parseServiceMcp({ tools: mcp?.tools ?? [], prompts: mcp?.prompts ?? [] });
+  const mcpHandlers = new Map(
+    (mcp?.tools ?? []).flatMap((tool) =>
+      tool.handler ? [[tool.name, tool.handler] as const] : [],
+    ),
+  );
 
   const app = Fastify({
     logger: {
@@ -69,6 +79,17 @@ export function createServiceApp(options: CreateServiceAppOptions): FastifyInsta
   requireInternalToken(app, internalToken);
 
   app.get('/internal/health', async () => ({ ok: true }));
+  app.get('/internal/mcp', async () => mcpDeclaration);
+  // El gateway reenvía acá las llamadas de las herramientas MCP; el servicio valida sus argumentos.
+  app.post('/internal/mcp/tools/:name', async (request) => {
+    const { name } = request.params as { name: string };
+    const handler = mcpHandlers.get(name);
+    if (!handler) {
+      throw new AppError('MCP_TOOL_NOT_FOUND', `La herramienta MCP «${name}» no existe.`, 404);
+    }
+    const body = request.body as { arguments?: Record<string, unknown> } | undefined;
+    return { result: await handler(body?.arguments ?? {}) };
+  });
   app.get('/internal/manifest', async () => ({
     id: manifest.id,
     name: manifest.name,

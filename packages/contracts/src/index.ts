@@ -36,3 +36,4 @@ export const toolsResponseSchema = z.object({
 export type ToolsResponse = z.infer<typeof toolsResponseSchema>;
 
 export * from './repoConfig.js';
+export * from './mcp.js';

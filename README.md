@@ -101,6 +101,23 @@ Se corren desde la raíz del repositorio, después de `npm install`.
 | `npm run format:check` | Verifica que el formato cumpla con Prettier (lo exige el CI)                          |
 | `npm run format`       | Aplica el formato de Prettier a los archivos del repositorio                          |
 
+## Servidor MCP (Claude Code)
+
+Atalaya expone sus herramientas a Claude mediante un único servidor MCP (ADR-002). Es un proceso liviano por stdio que lee el manifiesto del gateway (`GET /api/mcp/manifest`) y reenvía cada llamada (`POST /api/mcp/tools/:name`) con el encabezado `X-Atalaya-Client: mcp`. **El gateway tiene que estar corriendo** (`npm run dev`); si no, el servidor MCP responde con un error que lo explica.
+
+Las herramientas tienen acceso `read` o `draft`; ninguna puede publicar ni escribir fuera del borrador local. El contenido que devuelven es dato no confiable.
+
+Registro, una sola vez (reemplaza `<ruta>` por la ruta absoluta del repositorio):
+
+```bash
+npm run build
+claude mcp add --scope user --transport stdio atalaya -- node <ruta>/gateway/dist/gateway/src/mcp/server.js
+```
+
+Si el gateway no escucha en `http://127.0.0.1:3001`, agrega `-e ATALAYA_GATEWAY_URL=<url>` antes del `--`. Para probarlo sin compilar: `npm run mcp -w @atalaya/gateway`.
+
+Después abre Claude Code, corre `/mcp` para ver el servidor `atalaya` y sus herramientas (con prefijo, por ejemplo `pr_reviewer_...`), y usa `/status` y `/usage` para confirmar con qué cuenta corre la sesión y que el consumo cuenta contra tu plan.
+
 ## Mapa de carpetas
 
 ```

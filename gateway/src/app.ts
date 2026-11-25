@@ -14,6 +14,7 @@ import { internalRepoRoutes, repoRoutes } from './routes/repos.js';
 import { healthRoutes } from './routes/health.js';
 import { githubRoutes } from './routes/github.js';
 import { jiraRoutes } from './routes/jira.js';
+import { mcpRoutes } from './routes/mcp.js';
 import { proxyRoutes } from './routes/proxy.js';
 import type { ToolEntry } from './tools.config.js';
 import { INTERNAL_TOKEN_HEADER, type FetchFn } from './upstream.js';
@@ -85,6 +86,12 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         await api.register(repoRoutes, { store });
         await api.register(githubRoutes, { store, github });
         await api.register(jiraRoutes, { store, jira });
+        await api.register(mcpRoutes, {
+          upstream,
+          tools,
+          healthTimeoutMs: options.healthTimeoutMs ?? 1500,
+          proxyTimeoutMs: options.proxyTimeoutMs ?? 30_000,
+        });
         await api.register(proxyRoutes, {
           upstream,
           tools,
