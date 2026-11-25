@@ -23,3 +23,11 @@ export {
   type GitHubErrorKind,
 } from './github/errors.js';
 export { checkRepoAccess, getAuthStatus } from './github/check.js';
+export {
+  createJiraProvider,
+  type CreateJiraProviderOptions,
+  type JiraFetch,
+} from './jira/client.js';
+export { translateJiraStatus } from './jira/errors.js';
+export { checkJiraProject } from './jira/check.js';
+export type { JiraProject, JiraProvider } from './jira/types.js';

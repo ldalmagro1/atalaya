@@ -19,6 +19,7 @@ describe('schemas del gateway', () => {
       ok: false,
       tools: [{ id: 'pr_reviewer', ok: false, version: null }],
       githubConfigured: false,
+      jiraConfigured: false,
     };
     expect(healthResponseSchema.safeParse(valida).success).toBe(true);
     expect(healthResponseSchema.safeParse({ ok: true }).success).toBe(false);

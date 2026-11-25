@@ -72,3 +72,12 @@ export const RepoCheckResult = z.object({
   message: z.string(),
 });
 export type RepoCheckResult = z.infer<typeof RepoCheckResult>;
+
+/** Respuesta de `POST /api/repos/:id/jira/check`. */
+export const JiraCheckResult = z.object({
+  ok: z.boolean(),
+  projectKey: z.string(),
+  projectName: z.string(),
+  message: z.string(),
+});
+export type JiraCheckResult = z.infer<typeof JiraCheckResult>;

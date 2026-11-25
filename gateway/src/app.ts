@@ -1,10 +1,19 @@
 import cors from '@fastify/cors';
 import Fastify, { type FastifyInstance } from 'fastify';
-import { createGitHubClient, registerErrorHandling, type Db, type GitHubApi } from '@atalaya/core';
+import {
+  createGitHubClient,
+  createJiraProvider,
+  registerErrorHandling,
+  type Db,
+  type GitHubApi,
+  type JiraProvider,
+} from '@atalaya/core';
+import type { JiraCredentials } from './config.js';
 import { RepoStore } from './repos/repo-store.js';
 import { internalRepoRoutes, repoRoutes } from './routes/repos.js';
 import { healthRoutes } from './routes/health.js';
 import { githubRoutes } from './routes/github.js';
+import { jiraRoutes } from './routes/jira.js';
 import { proxyRoutes } from './routes/proxy.js';
 import type { ToolEntry } from './tools.config.js';
 import { INTERNAL_TOKEN_HEADER, type FetchFn } from './upstream.js';
@@ -23,6 +32,10 @@ export interface BuildAppOptions {
   githubToken?: string | null;
   /** Cliente de GitHub falso para los tests (evita la red). */
   octokit?: GitHubApi;
+  /** Credenciales de Jira; sin ellas (y sin `jiraProvider`) `jira/check` responde 503. */
+  jira?: JiraCredentials | null;
+  /** Proveedor de Jira falso para los tests (evita la red). */
+  jiraProvider?: JiraProvider;
   healthTimeoutMs?: number;
   proxyTimeoutMs?: number;
   /** Nivel de log y destino (los tests capturan los logs con `stream`). */
@@ -36,6 +49,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   const github =
     options.octokit ??
     (options.githubToken ? createGitHubClient({ token: options.githubToken }) : null);
+  const jira = options.jiraProvider ?? (options.jira ? createJiraProvider(options.jira) : null);
   if (internalToken.length === 0) throw new Error('internalToken no puede estar vacío');
   const upstream = { fetchFn: options.fetchFn ?? fetch, internalToken };
 
@@ -66,9 +80,11 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
           tools,
           healthTimeoutMs: options.healthTimeoutMs ?? 1500,
           githubConfigured: github !== null,
+          jiraConfigured: jira !== null,
         });
         await api.register(repoRoutes, { store });
         await api.register(githubRoutes, { store, github });
+        await api.register(jiraRoutes, { store, jira });
         await api.register(proxyRoutes, {
           upstream,
           tools,
