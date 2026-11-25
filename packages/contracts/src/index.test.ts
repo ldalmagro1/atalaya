@@ -15,7 +15,11 @@ describe('@atalaya/contracts', () => {
 
 describe('schemas del gateway', () => {
   it('acepta una salud válida y rechaza una inválida', () => {
-    const valida = { ok: false, tools: [{ id: 'pr_reviewer', ok: false, version: null }] };
+    const valida = {
+      ok: false,
+      tools: [{ id: 'pr_reviewer', ok: false, version: null }],
+      githubConfigured: false,
+    };
     expect(healthResponseSchema.safeParse(valida).success).toBe(true);
     expect(healthResponseSchema.safeParse({ ok: true }).success).toBe(false);
   });

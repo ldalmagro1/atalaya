@@ -42,11 +42,12 @@ export interface HealthRoutesOptions {
   upstream: Upstream;
   tools: ToolEntry[];
   healthTimeoutMs: number;
+  githubConfigured: boolean;
 }
 
 /** `GET /health` (salud agregada) y `GET /tools` (manifiestos). Nunca falla por una herramienta caída. */
 export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (app, options) => {
-  const { upstream, tools, healthTimeoutMs } = options;
+  const { upstream, tools, healthTimeoutMs, githubConfigured } = options;
 
   app.get('/health', async () => {
     const statuses = await Promise.all(
@@ -59,7 +60,7 @@ export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (app,
         return { id: tool.id, ok, version: ok ? manifest.version : null };
       }),
     );
-    return { ok: statuses.every((status) => status.ok), tools: statuses };
+    return { ok: statuses.every((status) => status.ok), tools: statuses, githubConfigured };
   });
 
   app.get('/tools', async () => {

@@ -51,3 +51,24 @@ export type Repo = z.infer<typeof Repo>;
 /** Respuesta de `GET /api/repos`. */
 export const RepoListResponse = z.object({ repos: z.array(Repo) });
 export type RepoListResponse = z.infer<typeof RepoListResponse>;
+
+/** Respuesta de `GET /api/github/status`. */
+export const GitHubStatus = z.object({
+  configured: z.boolean(),
+  valid: z.boolean(),
+  login: z.string().nullable(),
+});
+export type GitHubStatus = z.infer<typeof GitHubStatus>;
+
+/** Respuesta de `POST /api/repos/:id/github/check`. */
+export const RepoCheckResult = z.object({
+  ok: z.boolean(),
+  repoFound: z.boolean(),
+  canReadPulls: z.boolean(),
+  canReadContents: z.boolean(),
+  /** El permiso de escritura no se puede comprobar sin escribir. */
+  canWritePulls: z.literal('unverified'),
+  defaultBranch: z.string(),
+  message: z.string(),
+});
+export type RepoCheckResult = z.infer<typeof RepoCheckResult>;

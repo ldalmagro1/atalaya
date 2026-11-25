@@ -1,9 +1,10 @@
 import cors from '@fastify/cors';
 import Fastify, { type FastifyInstance } from 'fastify';
-import { registerErrorHandling, type Db } from '@atalaya/core';
+import { createGitHubClient, registerErrorHandling, type Db, type GitHubApi } from '@atalaya/core';
 import { RepoStore } from './repos/repo-store.js';
 import { internalRepoRoutes, repoRoutes } from './routes/repos.js';
 import { healthRoutes } from './routes/health.js';
+import { githubRoutes } from './routes/github.js';
 import { proxyRoutes } from './routes/proxy.js';
 import type { ToolEntry } from './tools.config.js';
 import { INTERNAL_TOKEN_HEADER, type FetchFn } from './upstream.js';
@@ -18,6 +19,10 @@ export interface BuildAppOptions {
   db: Db;
   /** Para inyectar un cliente falso en los tests. */
   fetchFn?: FetchFn;
+  /** Token de GitHub; sin él (y sin `octokit`) las rutas de GitHub informan que no está configurado. */
+  githubToken?: string | null;
+  /** Cliente de GitHub falso para los tests (evita la red). */
+  octokit?: GitHubApi;
   healthTimeoutMs?: number;
   proxyTimeoutMs?: number;
   /** Nivel de log y destino (los tests capturan los logs con `stream`). */
@@ -28,6 +33,9 @@ export interface BuildAppOptions {
 export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
   const { internalToken, tools, logger, db } = options;
   const store = new RepoStore(db);
+  const github =
+    options.octokit ??
+    (options.githubToken ? createGitHubClient({ token: options.githubToken }) : null);
   if (internalToken.length === 0) throw new Error('internalToken no puede estar vacío');
   const upstream = { fetchFn: options.fetchFn ?? fetch, internalToken };
 
@@ -57,8 +65,10 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
           upstream,
           tools,
           healthTimeoutMs: options.healthTimeoutMs ?? 1500,
+          githubConfigured: github !== null,
         });
         await api.register(repoRoutes, { store });
+        await api.register(githubRoutes, { store, github });
         await api.register(proxyRoutes, {
           upstream,
           tools,

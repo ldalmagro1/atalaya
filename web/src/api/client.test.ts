@@ -19,17 +19,24 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe('api client', () => {
   it('pide solo rutas relativas /api (nunca otro puerto)', async () => {
-    const fetchMock = mockFetch(() => json({ ok: true, tools: [] }));
+    const fetchMock = mockFetch(() => json({ ok: true, tools: [], githubConfigured: false }));
     await api.health();
     const url = String((fetchMock.mock.calls as unknown[][])[0]?.[0]);
     expect(url).toBe('/api/health');
   });
 
   it('devuelve la salud validada', async () => {
-    mockFetch(() => json({ ok: false, tools: [{ id: 'pr_reviewer', ok: false, version: null }] }));
+    mockFetch(() =>
+      json({
+        ok: false,
+        tools: [{ id: 'pr_reviewer', ok: false, version: null }],
+        githubConfigured: false,
+      }),
+    );
     await expect(api.health()).resolves.toEqual({
       ok: false,
       tools: [{ id: 'pr_reviewer', ok: false, version: null }],
+      githubConfigured: false,
     });
   });
 

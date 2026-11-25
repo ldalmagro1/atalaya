@@ -84,6 +84,7 @@ describe('gateway', () => {
       expect(res.json()).toEqual({
         ok: true,
         tools: [{ id: 'pr_reviewer', ok: true, version: '1.2.3' }],
+        githubConfigured: false,
       });
     });
 
@@ -100,6 +101,7 @@ describe('gateway', () => {
       expect(res.json()).toEqual({
         ok: false,
         tools: [{ id: 'pr_reviewer', ok: false, version: null }],
+        githubConfigured: false,
       });
       await down.close();
     });

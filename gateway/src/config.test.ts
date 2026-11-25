@@ -54,7 +54,7 @@ describe('loadConfig', () => {
   });
 
   it('no lee variables de otras herramientas', () => {
-    const config = loadConfig({ INTERNAL_TOKEN: TOKEN, GITHUB_TOKEN: 'ghp_ejemplo' });
-    expect(JSON.stringify(config)).not.toContain('ghp_ejemplo');
+    const config = loadConfig({ INTERNAL_TOKEN: TOKEN, OTRA_HERRAMIENTA_KEY: 'valor-ajeno' });
+    expect(JSON.stringify(config)).not.toContain('valor-ajeno');
   });
 });
