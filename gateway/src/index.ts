@@ -23,6 +23,7 @@ runMigrations({
 });
 
 const app = await buildApp({
+  db,
   internalToken: config.internalToken,
   tools: registeredTools(config),
 });
