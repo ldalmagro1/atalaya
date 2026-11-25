@@ -85,6 +85,7 @@ describe('gateway', () => {
         ok: true,
         tools: [{ id: 'pr_reviewer', ok: true, version: '1.2.3' }],
         githubConfigured: false,
+        jiraConfigured: false,
       });
     });
 
@@ -102,6 +103,7 @@ describe('gateway', () => {
         ok: false,
         tools: [{ id: 'pr_reviewer', ok: false, version: null }],
         githubConfigured: false,
+        jiraConfigured: false,
       });
       await down.close();
     });

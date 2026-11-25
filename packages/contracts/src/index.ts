@@ -17,6 +17,8 @@ export const healthResponseSchema = z.object({
   tools: z.array(z.object({ id: z.string(), ok: z.boolean(), version: z.string().nullable() })),
   /** Hay un `GITHUB_TOKEN` configurado en el gateway (no dice si es válido). */
   githubConfigured: z.boolean(),
+  /** Hay `JIRA_BASE_URL`, `JIRA_EMAIL` y `JIRA_API_TOKEN` en el gateway (no dice si son válidos). */
+  jiraConfigured: z.boolean(),
 });
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
 

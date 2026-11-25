@@ -57,4 +57,42 @@ describe('loadConfig', () => {
     const config = loadConfig({ INTERNAL_TOKEN: TOKEN, OTRA_HERRAMIENTA_KEY: 'valor-ajeno' });
     expect(JSON.stringify(config)).not.toContain('valor-ajeno');
   });
+
+  describe('Jira', () => {
+    const jiraEnv = {
+      INTERNAL_TOKEN: TOKEN,
+      JIRA_BASE_URL: 'https://ejemplo.atlassian.net/',
+      JIRA_EMAIL: 'persona@ejemplo.test',
+      JIRA_API_TOKEN: 'jira-token-de-prueba',
+    };
+
+    it('sin variables de Jira, jira es null', () => {
+      expect(loadConfig({ INTERNAL_TOKEN: TOKEN }).jira).toBeNull();
+      expect(loadConfig({ ...jiraEnv, JIRA_BASE_URL: '', JIRA_EMAIL: ' ' }).jira).toBeNull();
+    });
+
+    it('con las tres variables, las lee y quita la barra final', () => {
+      expect(loadConfig(jiraEnv).jira).toEqual({
+        baseUrl: 'https://ejemplo.atlassian.net',
+        email: 'persona@ejemplo.test',
+        apiToken: 'jira-token-de-prueba',
+      });
+    });
+
+    it('si falta alguna de las tres, jira es null', () => {
+      expect(loadConfig({ ...jiraEnv, JIRA_API_TOKEN: undefined }).jira).toBeNull();
+    });
+
+    it('rechaza una JIRA_BASE_URL con otra forma sin mostrar su valor', () => {
+      const bad = 'http://otro-sitio.test/secreto';
+      let message = '';
+      try {
+        loadConfig({ ...jiraEnv, JIRA_BASE_URL: bad });
+      } catch (error) {
+        message = error instanceof Error ? error.message : '';
+      }
+      expect(message).toMatch(/JIRA_BASE_URL/);
+      expect(message).not.toContain(bad);
+    });
+  });
 });

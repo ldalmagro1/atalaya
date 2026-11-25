@@ -7,6 +7,13 @@ export const REPO_ROOT = resolve(import.meta.dirname, '..', '..');
 
 const port = z.coerce.number().int().min(1).max(65535);
 
+/** Variable opcional: vacía o solo espacios cuenta como no definida. */
+const optional = <T extends z.ZodType>(type: T) =>
+  z.preprocess(
+    (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+    type.optional(),
+  );
+
 const schema = z.object({
   GATEWAY_PORT: port.default(3001),
   INTERNAL_TOKEN: z
@@ -16,7 +23,26 @@ const schema = z.object({
   PR_REVIEWER_PORT: port.default(3101),
   /** Opcional: sin token, el gateway arranca y las rutas de GitHub lo informan. */
   GITHUB_TOKEN: z.string().optional(),
+  /** Opcionales: sin las tres, el gateway arranca y `jira/check` informa que falta configurar. */
+  JIRA_BASE_URL: optional(
+    z
+      .string()
+      .trim()
+      .regex(
+        /^https:\/\/[a-z0-9-]+\.atlassian\.net\/?$/,
+        'debe tener la forma https://<sitio>.atlassian.net',
+      ),
+  ),
+  JIRA_EMAIL: optional(z.string().trim()),
+  JIRA_API_TOKEN: optional(z.string().trim()),
 });
+
+/** Credenciales de Jira del gateway. */
+export interface JiraCredentials {
+  readonly baseUrl: string;
+  readonly email: string;
+  readonly apiToken: string;
+}
 
 export interface GatewayConfig {
   readonly port: number;
@@ -27,6 +53,8 @@ export interface GatewayConfig {
   readonly toolPorts: Readonly<Record<string, number>>;
   /** Token de GitHub (fine-grained PAT) o `null` si no está configurado. Nunca se registra. */
   readonly githubToken: string | null;
+  /** Credenciales de Jira o `null` si falta alguna de las tres variables. Nunca se registran. */
+  readonly jira: JiraCredentials | null;
 }
 
 /**
@@ -42,13 +70,31 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig 
       .join('; ');
     throw new Error(`Configuración inválida del gateway (${problems})`);
   }
-  const { GATEWAY_PORT, INTERNAL_TOKEN, DB_PATH, PR_REVIEWER_PORT, GITHUB_TOKEN } = result.data;
+  const {
+    GATEWAY_PORT,
+    INTERNAL_TOKEN,
+    DB_PATH,
+    PR_REVIEWER_PORT,
+    GITHUB_TOKEN,
+    JIRA_BASE_URL,
+    JIRA_EMAIL,
+    JIRA_API_TOKEN,
+  } = result.data;
+  const jira =
+    JIRA_BASE_URL && JIRA_EMAIL && JIRA_API_TOKEN
+      ? Object.freeze({
+          baseUrl: JIRA_BASE_URL.replace(/\/$/, ''),
+          email: JIRA_EMAIL,
+          apiToken: JIRA_API_TOKEN,
+        })
+      : null;
   return Object.freeze({
     port: GATEWAY_PORT,
     internalToken: INTERNAL_TOKEN,
     dbPath: resolve(REPO_ROOT, DB_PATH),
     toolPorts: Object.freeze({ pr_reviewer: PR_REVIEWER_PORT }),
     githubToken: GITHUB_TOKEN?.trim() ? GITHUB_TOKEN.trim() : null,
+    jira,
   });
 }
 

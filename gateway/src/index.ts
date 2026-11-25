@@ -27,6 +27,7 @@ const app = await buildApp({
   internalToken: config.internalToken,
   tools: registeredTools(config),
   githubToken: config.githubToken,
+  jira: config.jira,
 });
 app.addHook('onClose', async () => {
   db.close();

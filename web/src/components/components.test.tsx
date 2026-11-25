@@ -112,6 +112,7 @@ describe('HealthBanner', () => {
           jsonResponse({
             ok: false,
             githubConfigured: false,
+            jiraConfigured: false,
             tools: [
               { id: 'pr_reviewer', ok: false, version: null },
               { id: 'otra', ok: true, version: '1.0.0' },
@@ -135,6 +136,7 @@ describe('HealthBanner', () => {
             ok: true,
             tools: [{ id: 'pr_reviewer', ok: true, version: '0.0.0' }],
             githubConfigured: true,
+            jiraConfigured: false,
           }),
         ),
       ),
