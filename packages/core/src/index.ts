@@ -12,3 +12,14 @@ export {
   type ServiceManifest,
 } from './service/create-service-app.js';
 export { listenLocal, LOCAL_HOST } from './service/listen-local.js';
+export {
+  createGitHubClient,
+  type CreateGitHubClientOptions,
+  type GitHubApi,
+} from './github/client.js';
+export {
+  classifyGitHubError,
+  translateGitHubError,
+  type GitHubErrorKind,
+} from './github/errors.js';
+export { checkRepoAccess, getAuthStatus } from './github/check.js';

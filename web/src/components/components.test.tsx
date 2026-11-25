@@ -111,6 +111,7 @@ describe('HealthBanner', () => {
         Promise.resolve(
           jsonResponse({
             ok: false,
+            githubConfigured: false,
             tools: [
               { id: 'pr_reviewer', ok: false, version: null },
               { id: 'otra', ok: true, version: '1.0.0' },
@@ -130,7 +131,11 @@ describe('HealthBanner', () => {
       'fetch',
       vi.fn(() =>
         Promise.resolve(
-          jsonResponse({ ok: true, tools: [{ id: 'pr_reviewer', ok: true, version: '0.0.0' }] }),
+          jsonResponse({
+            ok: true,
+            tools: [{ id: 'pr_reviewer', ok: true, version: '0.0.0' }],
+            githubConfigured: true,
+          }),
         ),
       ),
     );

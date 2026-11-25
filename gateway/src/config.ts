@@ -14,6 +14,8 @@ const schema = z.object({
     .min(32, 'debe tener al menos 32 caracteres'),
   DB_PATH: z.string().min(1).default('./data/atalaya.db'),
   PR_REVIEWER_PORT: port.default(3101),
+  /** Opcional: sin token, el gateway arranca y las rutas de GitHub lo informan. */
+  GITHUB_TOKEN: z.string().optional(),
 });
 
 export interface GatewayConfig {
@@ -23,6 +25,8 @@ export interface GatewayConfig {
   readonly dbPath: string;
   /** Puerto de cada herramienta registrada, por id. */
   readonly toolPorts: Readonly<Record<string, number>>;
+  /** Token de GitHub (fine-grained PAT) o `null` si no está configurado. Nunca se registra. */
+  readonly githubToken: string | null;
 }
 
 /**
@@ -38,12 +42,13 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig 
       .join('; ');
     throw new Error(`Configuración inválida del gateway (${problems})`);
   }
-  const { GATEWAY_PORT, INTERNAL_TOKEN, DB_PATH, PR_REVIEWER_PORT } = result.data;
+  const { GATEWAY_PORT, INTERNAL_TOKEN, DB_PATH, PR_REVIEWER_PORT, GITHUB_TOKEN } = result.data;
   return Object.freeze({
     port: GATEWAY_PORT,
     internalToken: INTERNAL_TOKEN,
     dbPath: resolve(REPO_ROOT, DB_PATH),
     toolPorts: Object.freeze({ pr_reviewer: PR_REVIEWER_PORT }),
+    githubToken: GITHUB_TOKEN?.trim() ? GITHUB_TOKEN.trim() : null,
   });
 }
 
