@@ -170,3 +170,16 @@ Decisiones tomadas durante ATAL-5 que la historia no fijaba.
 - **Log de Octokit.** `createGitHubClient` silencia las líneas de estado 304, que Octokit registra como error y son la lectura normal desde la caché.
 - **Dos procesos a la vez.** `runMigrations` aplicaba dos veces una migración si otro proceso la corría entre la lectura y la escritura; ahora relee dentro de una transacción `immediate`. Además, `openDatabase` reintenta activar WAL, que sobre una base nueva responde `SQLITE_BUSY` sin respetar `busy_timeout`. Ambos fallos se reprodujeron con tests antes de corregirlos.
 - **Fuera de alcance.** Las rutas de PRs y el filtrado de diffs (ATAL-7), `GITHUB_TOKEN` en `pr-reviewer` y limpiar la caché al borrar un repo.
+
+## ATAL-36
+
+- **La limpieza borra también los worktrees (cambio pedido por Lucas en el plan).** La historia decía que el comando nunca los borraba. Ahora, si la rama está fusionada en `main` y se confirma, se borran el worktree y la rama, sin forzar. Se conservan el worktree principal, el de la sesión, los bloqueados y los que tienen cambios. Una rama con la remota borrada pero sin fusionar solo se informa. Se actualizó la historia.
+- **Enlaces que salen del worktree.** Al probar la limpieza en Windows (Git 2.49), `git worktree remove` sin `--force` siguió una junction dentro de una carpeta ignorada y borró los archivos del destino, fuera del worktree. `scripts/enlaces-externos.mjs` los detecta y, si hay alguno o no puede revisar, el worktree se conserva. No lo pedía la historia.
+- **Permisos de `/iniciar-US`.** `Bash(git branch:*)` también preaprobaba `-D`; se reemplaza por los permisos de lectura y `git branch -d:*`. `git branch -vv` va sin comodín porque admitiría agregar `-D`. `git worktree remove` y `git -C` no se preaprueban, así que piden permiso. `git branch -d:*` aún admite `-d -f`: lo prohíbe el texto del comando. `allowed-tools` preaprueba, no bloquea.
+- **Máximo 3 PRs de Dependabot por ecosistema (elegido por Lucas)**, en lugar de los 5 de la historia.
+- **Grupo para correcciones de seguridad menores y de parche**, para que no llegue un PR por cada alerta. No lo pedía la historia.
+- **Dependabot sin versiones ignoradas.** También propone las mayores de React, Tailwind y React Router, fijadas en el stack: fusionarlas sigue requiriendo una decisión.
+- **Dependencias revisa todos los alcances (elegido por Lucas):** `runtime`, `development` y `unknown`. Por defecto la action solo mira `runtime`.
+- **Licencias (elegido por Lucas).** A la lista de la historia se suman las permisivas `Unlicense`, `MIT-0` y `PSF-2.0`. Se exceptúan por paquete, sin fijar versión: `@fontsource/inter` y `@fontsource/ibm-plex-sans-thai` (OFL-1.1); `lightningcss` y sus 11 binarios (MPL-2.0); `binaryextensions`, `editions`, `istextorbinary`, `textextensions` y `version-range` (Artistic-2.0); y `caniuse-lite` (CC-BY-4.0). Una excepción libera al paquete del control de licencia, no del de vulnerabilidades. Se verificó contra `package-lock.json`.
+- **Versiones de las actions.** `dependency-review-action@v5` y `codeql-action@v4`; `checkout` sigue en `v4` como el resto, y Dependabot propondrá la subida.
+- **`pull-requests: write` solo en Dependencias**, que lo necesita para comentar el motivo.
