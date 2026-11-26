@@ -1,0 +1,41 @@
+# Actualizaciones semanales: un PR agrupado con las minor y patch, y uno aparte por cada major.
+# Las correcciones de seguridad llegan cuando hay una alerta, sin esperar a la frecuencia semanal.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    labels:
+      - dependencias
+    groups:
+      menores:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+      seguridad-menores:
+        applies-to: security-updates
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    labels:
+      - dependencias
+    groups:
+      menores:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+      seguridad-menores:
+        applies-to: security-updates
+        update-types:
+          - minor
+          - patch

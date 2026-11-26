@@ -77,7 +77,14 @@ TypeScript (modo estricto) en un monorepo de npm workspaces · Node 24+ · Fasti
 
 - **Ramas:** `ATAL-N-slug`, donde `N` es el número de la historia y el slug resume su título (por ejemplo, `ATAL-22-configurar-la-integracion-continua`).
 - **Commits:** `ATAL-N: mensaje` en español, en imperativo o infinitivo corto.
-- **Pull requests:** una historia por PR, con la plantilla completa. El CI (typecheck, lint, formato, tests y build) debe estar en verde antes de fusionar.
+- **Pull requests:** una historia por PR, con la plantilla completa. El CI (typecheck, lint, formato, tests, build, secretos, dependencias y CodeQL) debe estar en verde antes de fusionar.
+- **Ramas fusionadas:** en GitHub, la rama de un PR se borra sola al fusionarlo (opción _Automatically delete head branches_; se puede restaurar desde el PR). En local, `/iniciar-US` ofrece borrar las ramas ya fusionadas en `main` junto con sus worktrees, siempre con confirmación y sin forzar. A mano: `git fetch --prune`, `git worktree remove <ruta>` si la rama tiene worktree y `git branch -d <rama>`.
+
+## Seguridad de dependencias y de código
+
+- **Dependabot** (`.github/dependabot.yml`) revisa cada semana las dependencias de npm y las actions: un PR con las actualizaciones menores y de parche, uno aparte por cada versión mayor y un máximo de 3 abiertos por ecosistema. Las correcciones de seguridad llegan cuando aparece la alerta. Sus PRs pasan por el mismo CI y se fusionan a mano.
+- **Dependencias** (job del CI, solo en PRs) falla si el PR suma una dependencia con una vulnerabilidad alta o crítica, o con una licencia fuera de la lista de `ci.yml`.
+- **CodeQL** (`.github/workflows/codeql.yml`) analiza el código en cada PR, en `main` y una vez por semana. Las alertas se ven en la pestaña _Security_.
 
 ## Licencia
 
