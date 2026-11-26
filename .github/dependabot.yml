@@ -1,4 +1,4 @@
-# Actualizaciones semanales: un PR agrupado con las minor y patch, y uno aparte por cada major.
+# Como máximo un PR semanal por ecosistema, que junta todas las actualizaciones.
 # Las correcciones de seguridad llegan cuando hay una alerta, sin esperar a la frecuencia semanal.
 version: 2
 updates:
@@ -9,6 +9,13 @@ updates:
     open-pull-requests-limit: 3
     labels:
       - dependencias
+    ignore:
+      # Las versiones mayores de npm se deciden en una historia (ver DECISIONES.md).
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
+      # Fijadas a propósito para que el lockfile sirva en Linux (ATAL-22).
+      - dependency-name: '@emnapi/*'
     groups:
       menores:
         applies-to: version-updates
@@ -29,11 +36,10 @@ updates:
     labels:
       - dependencias
     groups:
-      menores:
+      actions:
         applies-to: version-updates
-        update-types:
-          - minor
-          - patch
+        patterns:
+          - '*'
       seguridad-menores:
         applies-to: security-updates
         update-types:

@@ -82,7 +82,7 @@ TypeScript (modo estricto) en un monorepo de npm workspaces · Node 24+ · Fasti
 
 ## Seguridad de dependencias y de código
 
-- **Dependabot** (`.github/dependabot.yml`) revisa cada semana las dependencias de npm y las actions: un PR con las actualizaciones menores y de parche, uno aparte por cada versión mayor y un máximo de 3 abiertos por ecosistema. Las correcciones de seguridad llegan cuando aparece la alerta. Sus PRs pasan por el mismo CI y se fusionan a mano.
+- **Dependabot** (`.github/dependabot.yml`) revisa cada semana las dependencias y abre como mucho un PR por ecosistema: en npm, las actualizaciones menores y de parche (las versiones mayores se deciden en una historia); en las actions, todas juntas. Las correcciones de seguridad llegan cuando aparece la alerta. Sus PRs pasan por el mismo CI y se fusionan a mano.
 - **Dependencias** (job del CI, solo en PRs) falla si el PR suma una dependencia con una vulnerabilidad alta o crítica, o con una licencia fuera de la lista de `ci.yml`.
 - **CodeQL** (`.github/workflows/codeql.yml`) analiza el código en cada PR, en `main` y una vez por semana. Las alertas se ven en la pestaña _Security_.
 
