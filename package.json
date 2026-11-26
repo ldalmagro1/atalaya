@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@emnapi/core": "2.0.0-beta.2",
-    "@emnapi/runtime": "2.0.0-beta.2",
+    "@emnapi/runtime": "2.0.0-beta.3",
     "@secretlint/secretlint-rule-preset-recommend": "13.1.0",
     "@types/node": "^26.6.6",
     "concurrently": "^10.0.7",
