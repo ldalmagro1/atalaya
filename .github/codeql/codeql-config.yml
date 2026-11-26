@@ -1,0 +1,5 @@
+# Lo que no es código propio queda fuera del análisis.
+paths-ignore:
+  - '**/node_modules'
+  - '**/dist'
+  - data

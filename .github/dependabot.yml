@@ -1,0 +1,46 @@
+# Actualizaciones semanales agrupadas. npm: como máximo dos PRs (menores y mayores);
+# github-actions: uno. Las correcciones de seguridad llegan cuando hay una alerta, también agrupadas.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    labels:
+      - dependencias
+    ignore:
+      # Fijadas a propósito para que el lockfile sirva en Linux (ATAL-22).
+      - dependency-name: '@emnapi/*'
+    groups:
+      menores:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+      # Aparte, para que una versión mayor que rompa algo no frene a las menores.
+      mayores:
+        applies-to: version-updates
+        update-types:
+          - major
+      seguridad:
+        applies-to: security-updates
+        patterns:
+          - '*'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    labels:
+      - dependencias
+    groups:
+      actions:
+        applies-to: version-updates
+        patterns:
+          - '*'
+      seguridad:
+        applies-to: security-updates
+        patterns:
+          - '*'
